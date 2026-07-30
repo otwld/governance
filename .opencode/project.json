@@ -1,0 +1,21 @@
+{
+  "$schema": "https://raw.githubusercontent.com/OTWLD/governance/main/schemas/project.schema.json",
+  "version": 1,
+  "commands": {
+    "verify": "npm run check"
+  },
+  "documents": [
+    {
+      "path": "AGENTS.md",
+      "purpose": "Repository maintenance instructions"
+    },
+    {
+      "path": "docs",
+      "purpose": "Design, operations, implementation, and roadmap documentation"
+    }
+  ],
+  "merge": {
+    "method": "squash",
+    "automatic": false
+  }
+}
