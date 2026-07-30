@@ -6,7 +6,7 @@ variant: high
 color: warning
 steps: 40
 permission:
-  "*": deny
+  "*": allow
   read:
     "*": allow
     "*.env": deny

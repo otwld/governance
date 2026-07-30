@@ -6,7 +6,7 @@ variant: medium
 color: info
 steps: 30
 permission:
-  "*": deny
+  "*": allow
   read:
     "*": allow
     "*.env": deny

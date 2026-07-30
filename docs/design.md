@@ -26,15 +26,16 @@ and Git tools.
 
 The primary coordinator selects work, creates the branch, delegates, inspects
 evidence, commits, pushes, manages the Project item and pull request, monitors CI,
-and squash-merges. It cannot edit source or tests. Its shell and GitHub permissions
-are an allowlist and exclude destructive Git, force push, administrative merge,
-branch deletion, deployment, and repository administration.
+and squash-merges. It cannot edit source or tests. Unknown shell commands run without
+approval prompts, while ordered explicit denies exclude destructive Git, force push,
+administrative merge, branch deletion, deployment, and repository administration.
 
 ### Implementer
 
 The implementer reads the repository, makes the smallest scoped change, adds tests
 when behavior changes, and runs focused and final checks. It cannot delegate,
-commit, push, use GitHub, switch branches, or deploy.
+commit, push, use GitHub, switch branches, or deploy. Unknown shell commands run
+without approval prompts, subject to ordered explicit role and safety denies.
 
 ### Reviewer
 

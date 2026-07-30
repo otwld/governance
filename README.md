@@ -178,6 +178,9 @@ run is not evidence of success.
 
 ## Security boundaries
 
+- All agents use a no-prompt top-level permission default. The orchestrator and
+  implementer allow unknown shell commands; reviewer and researcher retain a
+  read-only shell allowlist that denies unknown commands immediately.
 - Only the orchestrator may perform the specifically allowed branch, commit, push,
   Project, pull request, and squash-merge operations.
 - Implementers cannot use `gh`, commit, push, switch branches, delegate, deploy, or

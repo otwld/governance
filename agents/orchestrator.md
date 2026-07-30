@@ -5,7 +5,7 @@ model: openai/gpt-5.6-sol
 variant: high
 color: primary
 permission:
-  "*": deny
+  "*": allow
   read:
     "*": allow
     "*.env": deny
@@ -21,7 +21,7 @@ permission:
     reviewer: allow
     researcher: allow
   bash:
-    "*": deny
+    "*": allow
     "git status*": allow
     "git diff*": allow
     "git log*": allow
@@ -66,12 +66,22 @@ permission:
     "git push *--delete*": deny
     "git push origin :*": deny
     "git commit *--amend*": deny
+    "git branch -d*": deny
+    "git branch -D*": deny
+    "git branch --delete*": deny
+    "git branch * -d*": deny
+    "git branch * -D*": deny
+    "git branch * --delete*": deny
+    "git checkout*": deny
+    "git restore*": deny
+    "git reset*": deny
+    "git clean*": deny
+    "git stash*": deny
+    "git tag*": deny
     "git switch -C *": deny
     "git switch -f *": deny
     "git switch --force*": deny
     "git switch *--discard-changes*": deny
-    "git reset --hard*": deny
-    "git clean *": deny
     "git rebase *--onto*": deny
     "git rebase *--exec*": deny
     "git rebase *--interactive*": deny
@@ -80,14 +90,49 @@ permission:
     "gh pr merge *--admin*": deny
     "gh pr merge *--delete-branch*": deny
     "gh pr merge * -d*": deny
+    "gh repo archive*": deny
+    "gh repo unarchive*": deny
+    "gh repo create*": deny
     "gh repo delete*": deny
+    "gh repo edit*": deny
+    "gh repo rename*": deny
+    "gh repo sync*": deny
     "gh workflow run*": deny
     "gh release create*": deny
     "gh release delete*": deny
+    "npm publish*": deny
+    "npm deploy*": deny
+    "npm release*": deny
+    "npm run publish*": deny
+    "npm run deploy*": deny
+    "npm run release*": deny
+    "pnpm publish*": deny
+    "pnpm deploy*": deny
+    "pnpm release*": deny
+    "pnpm run publish*": deny
+    "pnpm run deploy*": deny
+    "pnpm run release*": deny
+    "yarn publish*": deny
+    "yarn deploy*": deny
+    "yarn release*": deny
+    "yarn npm publish*": deny
+    "yarn run publish*": deny
+    "yarn run deploy*": deny
+    "yarn run release*": deny
+    "bun publish*": deny
+    "bun deploy*": deny
+    "bun release*": deny
+    "bun run publish*": deny
+    "bun run deploy*": deny
+    "bun run release*": deny
+    "rm*": deny
+    "sudo*": deny
     "kubectl *": deny
     "helm *": deny
     "terraform apply*": deny
     "terraform destroy*": deny
+    "terraform * apply*": deny
+    "terraform * destroy*": deny
     "git diff*--output*": deny
     "git diff*>*": deny
     "git show*--output*": deny

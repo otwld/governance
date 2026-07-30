@@ -32,7 +32,7 @@ async function productionDistribution(t) {
   for (const name of ['orchestrator', 'implementer', 'reviewer', 'researcher']) {
     await writeFile(
       join(root, 'agents', `${name}.md`),
-      `---\ndescription: ${name} agent\nmode: ${name === 'orchestrator' ? 'primary' : 'subagent'}\npermission:\n  "*": deny\n---\n`,
+      `---\ndescription: ${name} agent\nmode: ${name === 'orchestrator' ? 'primary' : 'subagent'}\npermission:\n  "*": allow\n---\n`,
     );
   }
   for (const name of ['orchestrate', 'orchestrate-loop', 'setup-project', 'review']) {
@@ -78,6 +78,11 @@ test('accepts valid distribution frontmatter', async (t) => {
     '---\nname: review\ndescription: Review a code change\n---\n# Review\n',
   );
 
+  assert.deepEqual(await validateDistribution(root, { requireProductionAssets: false }), []);
+
+  const agentFile = join(root, 'agents/worker.md');
+  const agent = await readFile(agentFile, 'utf8');
+  await writeFile(agentFile, agent.replace('"*": deny', '"*": allow'));
   assert.deepEqual(await validateDistribution(root, { requireProductionAssets: false }), []);
 });
 
@@ -132,7 +137,7 @@ test('reports missing distribution content', async (t) => {
   ]);
 });
 
-test('rejects an invalid agent mode and missing default deny', async (t) => {
+test('rejects an invalid agent mode and missing default permission action', async (t) => {
   const root = await distribution(t);
   await writeFile(
     join(root, 'agents/worker.md'),
@@ -151,7 +156,7 @@ test('rejects an invalid agent mode and missing default deny', async (t) => {
     .map(({ path, message }) => `${path}: ${message}`)
     .join('\n');
   assert.match(output, /field "mode" must be primary, subagent, or all/);
-  assert.match(output, /permission must be a block with explicit top-level "\*" set to deny/);
+  assert.match(output, /permission must be a block with an explicit top-level "\*" action/);
 });
 
 test('rejects commands that reference a missing agent file', async (t) => {
@@ -244,7 +249,7 @@ test('requires exact production agent modes and command mappings', async (t) => 
     const file = join(root, 'agents', `${name}.md`);
     await writeFile(
       file,
-      `---\ndescription: ${name} agent\nmode: ${wrongMode}\npermission:\n  "*": deny\n---\n`,
+      `---\ndescription: ${name} agent\nmode: ${wrongMode}\npermission:\n  "*": allow\n---\n`,
     );
     const output = (await validateDistribution(root))
       .map(({ path, message }) => `${path}: ${message}`)
@@ -256,7 +261,7 @@ test('requires exact production agent modes and command mappings', async (t) => 
     );
     await writeFile(
       file,
-      `---\ndescription: ${name} agent\nmode: ${expectedMode}\npermission:\n  "*": deny\n---\n`,
+      `---\ndescription: ${name} agent\nmode: ${expectedMode}\npermission:\n  "*": allow\n---\n`,
     );
   }
 
@@ -289,6 +294,53 @@ test('requires exact production agent modes and command mappings', async (t) => 
   assert.deepEqual(await validateDistribution(root), []);
 });
 
+test('requires no-prompt permission actions for every production agent', async (t) => {
+  const root = await productionDistribution(t);
+  for (const name of ['orchestrator', 'implementer', 'reviewer', 'researcher']) {
+    const mode = name === 'orchestrator' ? 'primary' : 'subagent';
+    const file = join(root, 'agents', `${name}.md`);
+
+    await writeFile(
+      file,
+      `---\ndescription: ${name} agent\nmode: ${mode}\npermission:\n  "*": deny\n---\n`,
+    );
+    assert.deepEqual(await validateDistribution(root), [
+      {
+        path: `agents/${name}.md`,
+        message: `production agent "${name}" must set top-level "*" permission to allow`,
+      },
+    ], name);
+
+    await writeFile(
+      file,
+      `---\ndescription: ${name} agent\nmode: ${mode}\npermission:\n  "*": allow\n  bash:\n    "*": allow\n    "dangerous *": "ask"\n---\n`,
+    );
+    assert.deepEqual(await validateDistribution(root), [
+      {
+        path: `agents/${name}.md`,
+        message: `production agent "${name}" permission must not contain ask actions`,
+      },
+    ], `${name} quoted ask`);
+
+    await writeFile(
+      file,
+      `---\ndescription: ${name} agent\nmode: ${mode}\npermission:\n  "*": allow\n  bash:\n    "*": allow\n    "dangerous *": ask\n---\n`,
+    );
+    assert.deepEqual(await validateDistribution(root), [
+      {
+        path: `agents/${name}.md`,
+        message: `production agent "${name}" permission must not contain ask actions`,
+      },
+    ], name);
+
+    await writeFile(
+      file,
+      `---\ndescription: ${name} agent\nmode: ${mode}\npermission:\n  "*": allow\n---\n`,
+    );
+  }
+  assert.deepEqual(await validateDistribution(root), []);
+});
+
 function bashPermissionRules(content) {
   const bash = content.slice(content.indexOf('  bash:\n'), content.indexOf('  external_directory:\n'));
   return [...bash.matchAll(/^    "(.*)": (allow|deny)$/gm)].map(([, pattern, action]) => ({
@@ -315,6 +367,9 @@ test('production verification permissions allow only safe ordered command famili
   const implementerRules = bashPermissionRules(implementer);
   const reviewerRules = bashPermissionRules(reviewer);
 
+  assert.equal(effectiveBashPermission(implementerRules, 'node custom-check.mjs'), 'allow');
+  assert.equal(effectiveBashPermission(reviewerRules, 'node custom-check.mjs'), 'deny');
+
   for (const broadAllow of ['npm run *', 'pnpm run *', 'yarn *', 'bun run *']) {
     assert.equal(
       implementerRules.some(({ pattern, action }) => pattern === broadAllow && action === 'allow'),
@@ -328,7 +383,9 @@ test('production verification permissions allow only safe ordered command famili
     );
   }
 
-  const deniedCommands = ['npm run format'];
+  assert.equal(effectiveBashPermission(implementerRules, 'npm run format'), 'allow');
+  assert.equal(effectiveBashPermission(reviewerRules, 'npm run format'), 'deny');
+  const deniedCommands = [];
   for (const manager of ['npm', 'pnpm', 'yarn', 'bun']) {
     for (const operation of ['publish', 'deploy', 'release']) {
       deniedCommands.push(`${manager} ${operation}`, `${manager} run ${operation}`);
@@ -369,6 +426,107 @@ test('production verification permissions allow only safe ordered command famili
     }
     assert.equal(effectiveBashPermission(implementerRules, `${runner} deploy app`), 'deny', runner);
   }
+});
+
+test('production agents use no-prompt defaults while preserving read-only shell boundaries', async () => {
+  const agents = new URL('../agents/', import.meta.url);
+  for (const name of ['orchestrator', 'implementer', 'reviewer', 'researcher']) {
+    const content = await readFile(new URL(`${name}.md`, agents), 'utf8');
+    assert.match(content, /^permission:\n  "\*": allow$/m, name);
+    assert.doesNotMatch(content, /:\s*(?:ask|"ask"|'ask')\s*$/m, name);
+  }
+
+  const orchestratorRules = bashPermissionRules(
+    await readFile(new URL('orchestrator.md', agents), 'utf8'),
+  );
+  const implementerRules = bashPermissionRules(
+    await readFile(new URL('implementer.md', agents), 'utf8'),
+  );
+  const reviewerRules = bashPermissionRules(
+    await readFile(new URL('reviewer.md', agents), 'utf8'),
+  );
+  const researcherRules = bashPermissionRules(
+    await readFile(new URL('researcher.md', agents), 'utf8'),
+  );
+
+  assert.equal(effectiveBashPermission(orchestratorRules, 'node custom-tool.mjs'), 'allow');
+  assert.equal(effectiveBashPermission(implementerRules, 'node custom-tool.mjs'), 'allow');
+  assert.equal(effectiveBashPermission(reviewerRules, 'node custom-tool.mjs'), 'deny');
+  assert.equal(effectiveBashPermission(researcherRules, 'node custom-tool.mjs'), 'deny');
+  assert.equal(effectiveBashPermission(orchestratorRules, 'git reset --hard'), 'deny');
+  assert.equal(effectiveBashPermission(implementerRules, 'git push origin HEAD'), 'deny');
+});
+
+test('implementer denies bare and argument forms of every prohibited Git mutation', async () => {
+  const implementer = await readFile(new URL('../agents/implementer.md', import.meta.url), 'utf8');
+  const rules = bashPermissionRules(implementer);
+  const prohibitedGit = new Map([
+    ['add', 'file.txt'],
+    ['commit', '-m change'],
+    ['push', 'origin HEAD'],
+    ['pull', '--ff-only'],
+    ['fetch', 'origin'],
+    ['switch', 'feature'],
+    ['checkout', 'feature'],
+    ['merge', 'feature'],
+    ['rebase', 'main'],
+    ['reset', '--hard'],
+    ['restore', 'file.txt'],
+    ['clean', '-fd'],
+    ['stash', 'push'],
+    ['tag', 'v1.0.0'],
+  ]);
+
+  for (const [operation, args] of prohibitedGit) {
+    assert.equal(effectiveBashPermission(rules, `git ${operation}`), 'deny', `git ${operation}`);
+    assert.equal(
+      effectiveBashPermission(rules, `git ${operation} ${args}`),
+      'deny',
+      `git ${operation} ${args}`,
+    );
+  }
+  for (const command of ['git status', 'git diff', 'git log', 'git show']) {
+    assert.equal(effectiveBashPermission(rules, command), 'allow', command);
+  }
+  for (const command of ['git branch feature', 'git branch -m renamed']) {
+    assert.equal(effectiveBashPermission(rules, command), 'deny', command);
+  }
+  assert.equal(effectiveBashPermission(rules, 'git branch --show-current'), 'allow');
+});
+
+test('orchestrator denies direct destructive shell boundaries while preserving workflow actions', async () => {
+  const orchestrator = await readFile(new URL('../agents/orchestrator.md', import.meta.url), 'utf8');
+  const rules = bashPermissionRules(orchestrator);
+
+  for (const command of [
+    'git branch -D obsolete',
+    'git checkout feature',
+    'git restore file.txt',
+    'git reset --hard',
+    'git clean -fd',
+    'git stash push',
+    'git tag -d v1.0.0',
+    'gh repo archive owner/repo',
+    'npm publish',
+    'terraform -chdir=infra apply',
+    'terraform -chdir=infra destroy',
+    'rm -rf build',
+    'sudo npm install',
+  ]) {
+    assert.equal(effectiveBashPermission(rules, command), 'deny', command);
+  }
+  for (const manager of ['npm', 'pnpm', 'yarn', 'bun']) {
+    for (const operation of ['publish', 'release', 'deploy']) {
+      for (const command of [`${manager} ${operation}`, `${manager} run ${operation}`]) {
+        assert.equal(effectiveBashPermission(rules, command), 'deny', command);
+      }
+    }
+  }
+
+  assert.equal(effectiveBashPermission(rules, 'git push origin HEAD'), 'allow');
+  assert.equal(effectiveBashPermission(rules, 'git push -u origin HEAD'), 'allow');
+  assert.equal(effectiveBashPermission(rules, 'gh pr merge --squash 123'), 'allow');
+  assert.equal(effectiveBashPermission(rules, 'git status'), 'allow');
 });
 
 test('production non-editing agents retain exact pushes and shell write protections', async () => {

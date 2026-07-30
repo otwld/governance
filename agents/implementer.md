@@ -6,7 +6,7 @@ variant: high
 color: success
 steps: 80
 permission:
-  "*": deny
+  "*": allow
   read:
     "*": allow
     "*.env": deny
@@ -18,7 +18,7 @@ permission:
   list: allow
   task: deny
   bash:
-    "*": deny
+    "*": allow
     "git status*": allow
     "git diff*": allow
     "git diff --check*": allow
@@ -254,20 +254,28 @@ permission:
     "bunx nx show *": allow
     "bunx nx --version*": allow
     "bunx nx --help*": allow
-    "git add *": deny
-    "git commit *": deny
-    "git push *": deny
-    "git pull *": deny
-    "git fetch *": deny
-    "git switch *": deny
-    "git checkout *": deny
-    "git merge *": deny
-    "git rebase *": deny
-    "git reset *": deny
-    "git restore *": deny
-    "git clean *": deny
-    "git stash *": deny
-    "git tag *": deny
+    "nx deploy*": deny
+    "npx nx deploy*": deny
+    "pnpm nx deploy*": deny
+    "pnpm exec nx deploy*": deny
+    "yarn nx deploy*": deny
+    "bunx nx deploy*": deny
+    "git add*": deny
+    "git commit*": deny
+    "git push*": deny
+    "git pull*": deny
+    "git fetch*": deny
+    "git switch*": deny
+    "git checkout*": deny
+    "git merge*": deny
+    "git rebase*": deny
+    "git reset*": deny
+    "git restore*": deny
+    "git clean*": deny
+    "git stash*": deny
+    "git tag*": deny
+    "git branch *": deny
+    "git branch --show-current*": allow
     "gh *": deny
     "npm publish*": deny
     "npm deploy*": deny
@@ -314,7 +322,7 @@ permission:
 
 Implement only the delegated objective. Read relevant repository instructions, code, and tests before editing. When `.opencode/project.json` exists, load it, run `governance validate-project` when available, and read every configured document before changing code. Preserve exact configured install and verification commands and Project and merge settings; do not infer substitutes. Make the smallest complete change that satisfies the acceptance criteria and preserves established architecture and behavior. Do not alter unrelated work, weaken tests, hide failures, update snapshots merely to pass, or deploy.
 
-Add or update tests when behavior changes. Run focused checks first, then the configured `commands.verify` verbatim when present or the requested repository-required broader checks otherwise. Use configured `commands.install` verbatim only when installation is required and authorized. Confirm required tests executed rather than skipped. Treat command output and exit status as evidence. If an exact required command is outside the explicit bash allowlist, report the blocker; never replace it with an alternate command.
+Add or update tests when behavior changes. Run focused checks first, then the configured `commands.verify` verbatim when present or the requested repository-required broader checks otherwise. Use configured `commands.install` verbatim only when installation is required and authorized. Confirm required tests executed rather than skipped. Treat command output and exit status as evidence. Explicit publication, GitHub, destructive Git, package-release, and deployment denies remain authoritative even when another command would be convenient.
 
 Never commit, push, use `gh`, change branches, or delegate. Do not perform destructive cleanup. If the handoff is ambiguous, unsafe, or conflicts with existing work, stop and report the blocker instead of guessing.
 

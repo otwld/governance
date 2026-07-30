@@ -75,9 +75,10 @@ Protect the default branch with settings that match repository policy:
 - require an up-to-date branch when the repository's CI and merge policy depend on
   it.
 
-The orchestrator's allowlist is defense in depth, not a replacement for these server
-controls. A mergeable API response does not override a missing required check or a
-failed independent review.
+The orchestrator's ordered explicit denies are defense in depth, not a replacement
+for these server controls. Unknown shell commands run without approval prompts. A
+mergeable API response does not override a missing required check or a failed
+independent review.
 
 ## Repository onboarding
 
