@@ -1,0 +1,19 @@
+{
+  "name": "opencode-governance",
+  "version": "0.1.0",
+  "description": "Dependency-free validation tools for an OpenCode governance distribution.",
+  "type": "module",
+  "private": true,
+  "bin": {
+    "governance": "bin/governance.mjs"
+  },
+  "scripts": {
+    "test": "node --test",
+    "validate": "node bin/governance.mjs validate-distribution .",
+    "check": "npm test && npm run validate"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "MIT"
+}

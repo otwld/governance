@@ -1,0 +1,30 @@
+{
+  "$schema": "https://raw.githubusercontent.com/OTWLD/governance/main/schemas/project.schema.json",
+  "version": 1,
+  "commands": {
+    "verify": "npm run check",
+    "install": "npm ci"
+  },
+  "documents": [
+    {
+      "path": "AGENTS.md",
+      "purpose": "Project-specific agent guidance"
+    }
+  ],
+  "githubProject": {
+    "owner": "example-owner",
+    "number": 1,
+    "statuses": {
+      "ready": "Ready",
+      "active": "In progress",
+      "review": "In review",
+      "done": "Done",
+      "blocked": "Blocked"
+    },
+    "priorityField": "Priority"
+  },
+  "merge": {
+    "method": "squash",
+    "automatic": false
+  }
+}

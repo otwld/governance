@@ -1,0 +1,40 @@
+name: Agent task
+description: Define a bounded implementation task for an agent
+title: "[Agent] "
+labels: []
+body:
+  - type: textarea
+    id: goal
+    attributes:
+      label: Goal
+      description: State one observable outcome and why it matters.
+      placeholder: Describe the user or repository outcome, not an implementation wish list.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Acceptance Criteria
+      description: List independently verifiable requirements, including required checks or evidence.
+      placeholder: |
+        - [ ] Observable behavior or artifact
+        - [ ] Edge case or compatibility requirement
+        - [ ] Exact required validation, if known
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: Link relevant code, docs, decisions, prior work, dependencies, and constraints.
+      placeholder: Include only information needed to make and verify the change.
+    validations:
+      required: true
+  - type: textarea
+    id: out-of-scope
+    attributes:
+      label: Out of Scope
+      description: Name adjacent behavior, files, refactors, or follow-up work that must not be included.
+      placeholder: List explicit boundaries that keep this task independently deliverable.
+    validations:
+      required: true

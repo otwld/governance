@@ -1,0 +1,10 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "default_agent": "orchestrator",
+  "subagent_depth": 1,
+  "skills": {
+    "paths": [
+      "/workspace/skills/skills"
+    ]
+  }
+}
