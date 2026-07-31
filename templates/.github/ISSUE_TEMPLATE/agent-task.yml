@@ -1,40 +1,103 @@
-name: Agent task
-description: Define a bounded implementation task for an agent
-title: "[Agent] "
+name: Agent implementation task
+description: Define one implementation-ready outcome for an autonomous implementer
 labels: []
 body:
   - type: textarea
-    id: goal
+    id: outcome
     attributes:
-      label: Goal
-      description: State one observable outcome and why it matters.
-      placeholder: Describe the user or repository outcome, not an implementation wish list.
+      label: Outcome
+      description: State exactly one independently deliverable, observable result and why it matters.
+      placeholder: Describe the completed user or repository outcome, not an implementation wish list.
     validations:
       required: true
   - type: textarea
-    id: acceptance-criteria
+    id: problem-evidence
     attributes:
-      label: Acceptance Criteria
-      description: List independently verifiable requirements, including required checks or evidence.
-      placeholder: |
-        - [ ] Observable behavior or artifact
-        - [ ] Edge case or compatibility requirement
-        - [ ] Exact required validation, if known
+      label: Problem and evidence
+      description: Describe the current behavior or gap and cite repository paths, issue links, or other evidence with the conclusion each supports.
+      placeholder: Explain the grounded current state and impact without pasting source dumps.
     validations:
       required: true
   - type: textarea
-    id: context
+    id: requirements
     attributes:
-      label: Context
-      description: Link relevant code, docs, decisions, prior work, dependencies, and constraints.
-      placeholder: Include only information needed to make and verify the change.
+      label: Requirements
+      description: List binding product, behavior, data, API, and compatibility requirements.
+      placeholder: Use precise, independently decidable statements.
+    validations:
+      required: true
+  - type: textarea
+    id: included-scope
+    attributes:
+      label: Included scope
+      description: Define the work that belongs in this independently deliverable task.
+      placeholder: Name the behavior and artifacts included, without prescribing guessed file edits.
     validations:
       required: true
   - type: textarea
     id: out-of-scope
     attributes:
-      label: Out of Scope
-      description: Name adjacent behavior, files, refactors, or follow-up work that must not be included.
-      placeholder: List explicit boundaries that keep this task independently deliverable.
+      label: Out of scope
+      description: When useful, name adjacent behavior, refactors, migrations, or follow-up work that must not be included. Omit this section when no explicit boundary is needed.
+  - type: textarea
+    id: technical-direction
+    attributes:
+      label: Technical direction
+      description: Separate binding decisions and constraints or invariants from internal implementation choices left to the implementer. Omit inapplicable subsections instead of adding N/A text.
+      placeholder: |
+        Binding decisions:
+        - ...
+
+        Constraints and invariants:
+        - ...
+
+        Implementer discretion:
+        - ...
     validations:
       required: true
+  - type: textarea
+    id: repository-context
+    attributes:
+      label: Repository context and likely touchpoints
+      description: Point to relevant guidance, source, tests, configuration, and CI with the operative conclusion each path supports. Touchpoints are evidence, not a mandatory edit list.
+      placeholder: "path/to/file: what it establishes for this task"
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance-scenarios
+    attributes:
+      label: Acceptance scenarios
+      description: Give independently decidable Given/When/Then scenarios, including applicable negative, edge, compatibility, and regression behavior.
+      placeholder: |
+        Scenario: Observable behavior
+        Given ...
+        When ...
+        Then ...
+    validations:
+      required: true
+  - type: textarea
+    id: validation
+    attributes:
+      label: Validation
+      description: List task-specific checks and the exact repository-required verification commands confirmed from current guidance or CI.
+      placeholder: Distinguish focused behavior checks from required final repository checks.
+    validations:
+      required: true
+  - type: textarea
+    id: dependencies-readiness
+    attributes:
+      label: Dependencies and readiness
+      description: Identify dependencies, ordering, access, migrations, or rollout prerequisites and show why the task is ready now. Material unresolved decisions mean the task is not ready.
+      placeholder: State satisfied prerequisites or the concrete dependency and its status.
+    validations:
+      required: true
+  - type: textarea
+    id: assumptions
+    attributes:
+      label: Low-impact assumptions
+      description: Record only reversible, low-impact assumptions. Omit this section when none were needed.
+  - type: textarea
+    id: references
+    attributes:
+      label: Authoritative references
+      description: Link primary documentation, standards, decisions, or prior issues used to shape the task. Omit this section when repository evidence is sufficient.

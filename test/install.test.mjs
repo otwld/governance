@@ -24,9 +24,11 @@ async function fixture(t) {
   const skillsHome = join(root, 'installed-skills');
   await mkdir(join(sourceRoot, 'agents'), { recursive: true });
   await mkdir(join(sourceRoot, 'commands'), { recursive: true });
+  await mkdir(join(sourceRoot, 'tools'), { recursive: true });
   await mkdir(join(sourceRoot, 'skills', 'review', 'references'), { recursive: true });
   await writeFile(join(sourceRoot, 'agents', 'reviewer.md'), 'agent\n');
   await writeFile(join(sourceRoot, 'commands', 'review.md'), 'command\n');
+  await writeFile(join(sourceRoot, 'tools', 'create_issue.js'), 'tool\n');
   await writeFile(join(sourceRoot, 'skills', 'review', 'SKILL.md'), 'skill\n');
   await writeFile(join(sourceRoot, 'skills', 'review', 'references', 'guide.md'), 'guide\n');
 
@@ -38,7 +40,7 @@ test('dry run plans every write without changing the destination', async (t) => 
   const plan = await planGlobalInstall(options);
   const result = await installGlobal(options);
 
-  assert.equal(plan.entries.length, 4);
+  assert.equal(plan.entries.length, 5);
   assert.ok(plan.entries.every((entry) => entry.status === 'write'));
   assert.deepEqual(plan.conflicts, []);
   assert.equal(result.applied, false);
@@ -47,14 +49,15 @@ test('dry run plans every write without changing the destination', async (t) => 
   await assert.rejects(access(options.skillsHome), { code: 'ENOENT' });
 });
 
-test('apply creates directories and copies agents, commands, and complete skills', async (t) => {
+test('apply creates directories and copies agents, commands, tools, and complete skills', async (t) => {
   const options = await fixture(t);
   const result = await installGlobal({ ...options, apply: true });
 
   assert.equal(result.applied, true);
-  assert.equal(result.written.length, 4);
+  assert.equal(result.written.length, 5);
   assert.equal(await readFile(join(options.configHome, 'agents', 'reviewer.md'), 'utf8'), 'agent\n');
   assert.equal(await readFile(join(options.configHome, 'commands', 'review.md'), 'utf8'), 'command\n');
+  assert.equal(await readFile(join(options.configHome, 'tools', 'create_issue.js'), 'utf8'), 'tool\n');
   assert.equal(await readFile(join(options.skillsHome, 'review', 'SKILL.md'), 'utf8'), 'skill\n');
   assert.equal(
     await readFile(join(options.skillsHome, 'review', 'references', 'guide.md'), 'utf8'),

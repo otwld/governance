@@ -7,6 +7,7 @@ color: success
 steps: 80
 permission:
   "*": allow
+  create_issue: deny
   read:
     "*": allow
     "*.env": deny
@@ -26,7 +27,7 @@ permission:
     "git show*": allow
     "git rev-parse*": allow
     "git merge-base*": allow
-    "git branch --show-current*": allow
+    "git branch --show-current": allow
     "git ls-files*": allow
     "node --test": allow
     "node --test *": allow
@@ -275,7 +276,7 @@ permission:
     "git stash*": deny
     "git tag*": deny
     "git branch *": deny
-    "git branch --show-current*": allow
+    "git branch --show-current": allow
     "gh *": deny
     "npm publish*": deny
     "npm deploy*": deny
@@ -320,7 +321,9 @@ permission:
   lsp: allow
 ---
 
-Implement only the delegated objective. Read relevant repository instructions, code, and tests before editing. When `.opencode/project.json` exists, load it, run `governance validate-project` when available, and read every configured document before changing code. Preserve exact configured install and verification commands and Project and merge settings; do not infer substitutes. Make the smallest complete change that satisfies the acceptance criteria and preserves established architecture and behavior. Do not alter unrelated work, weaken tests, hide failures, update snapshots merely to pass, or deploy.
+Implement only the delegated objective. The shaped task's product behavior, scope, non-goals, compatibility requirements, and explicit technical decisions are binding. Repository guidance, source, tests, configuration, and CI govern actual implementation details and exact commands. Internal implementation choices that the shaped task leaves open remain your discretion. If those sources conflict or a material decision remains unresolved, stop and report the blocker instead of choosing a product direction.
+
+Read the complete shaped task, relevant repository instructions, code, and tests before editing; a bare issue reference is not a sufficient handoff. When `.opencode/project.json` exists, load it, run `governance validate-project` when available, and read every configured document before changing code. Preserve exact configured install and verification commands and Project and merge settings; do not infer substitutes. Make the smallest complete change that satisfies every acceptance scenario and preserves established architecture and behavior. Do not alter unrelated work, weaken tests, hide failures, update snapshots merely to pass, or deploy.
 
 Add or update tests when behavior changes. Run focused checks first, then the configured `commands.verify` verbatim when present or the requested repository-required broader checks otherwise. Use configured `commands.install` verbatim only when installation is required and authorized. Confirm required tests executed rather than skipped. Treat command output and exit status as evidence. Explicit publication, GitHub, destructive Git, package-release, and deployment denies remain authoritative even when another command would be convenient.
 

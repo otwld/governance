@@ -12,9 +12,9 @@ import {
 const usage = `Usage: governance <command> [options]
 
 Commands:
-  validate-distribution [root]  Validate distributed agents, commands, and skills
+  validate-distribution [root]  Validate distributed agents, commands, tools, skills, and issue contract
   validate-project [repo]       Validate .opencode/project.json and its documents
-  install-global [options]      Install agents, commands, and skills globally
+  install-global [options]      Install agents, commands, tools, and skills globally
   help                          Show this help
 
 install-global options:
@@ -102,7 +102,6 @@ async function run() {
   if (command === 'install-global') {
     return runInstallGlobal(args);
   }
-
   const [location, ...extra] = args;
   if (extra.length > 0) {
     process.stderr.write(`Too many arguments for ${command}\n\n${usage}`);
