@@ -63,18 +63,18 @@ async function productionDistribution(t) {
   await mkdir(join(root, 'templates'), { recursive: true });
   await mkdir(join(root, 'templates', '.github', 'ISSUE_TEMPLATE'), { recursive: true });
 
-  for (const name of ['orchestrator', 'implementer', 'reviewer', 'researcher', 'task-shaper']) {
-    const defaultPermission = name === 'task-shaper' ? 'deny' : 'allow';
+  for (const name of ['brainstormer', 'orchestrator', 'implementer', 'reviewer', 'researcher', 'task-shaper']) {
+    const defaultPermission = ['brainstormer', 'researcher', 'task-shaper'].includes(name) ? 'deny' : 'allow';
     const createIssuePermission = name === 'task-shaper' ? 'allow' : 'deny';
     await writeFile(
       join(root, 'agents', `${name}.md`),
-      `---\ndescription: ${name} agent\nmode: ${['orchestrator', 'task-shaper'].includes(name) ? 'primary' : 'subagent'}\npermission:\n  "*": ${defaultPermission}\n  create_issue: ${createIssuePermission}\n---\n`,
+      `---\ndescription: ${name} agent\nmode: ${['brainstormer', 'orchestrator', 'task-shaper'].includes(name) ? 'primary' : 'subagent'}\npermission:\n  "*": ${defaultPermission}\n  create_issue: ${createIssuePermission}\n---\n`,
     );
   }
-  for (const name of ['orchestrate', 'orchestrate-loop', 'setup-project', 'review', 'shape-task']) {
+  for (const name of ['brainstorm', 'orchestrate', 'orchestrate-loop', 'setup-project', 'review', 'shape-task']) {
     await writeFile(
       join(root, 'commands', `${name}.md`),
-      `---\ndescription: ${name} command\nagent: ${name === 'review' ? 'reviewer' : name === 'shape-task' ? 'task-shaper' : 'orchestrator'}\n---\n`,
+      `---\ndescription: ${name} command\nagent: ${name === 'brainstorm' ? 'brainstormer' : name === 'review' ? 'reviewer' : name === 'shape-task' ? 'task-shaper' : 'orchestrator'}\n---\n`,
     );
   }
   await writeFile(join(root, 'tools', 'create_issue.js'), 'export default {};\n');
@@ -280,6 +280,28 @@ test('requires the exact production asset composition by default', async (t) => 
   assert.match(output, /agents\/worker: unexpected production agent name "worker"/);
 });
 
+test('rejects missing or renamed brainstorm production assets', async (t) => {
+  const root = await productionDistribution(t);
+  await rm(join(root, 'agents/brainstormer.md'));
+  await writeFile(
+    join(root, 'agents/idea-explorer.md'),
+    '---\ndescription: renamed brainstormer\nmode: primary\npermission:\n  "*": deny\n  create_issue: deny\n---\n',
+  );
+  await rm(join(root, 'commands/brainstorm.md'));
+  await writeFile(
+    join(root, 'commands/idea-session.md'),
+    '---\ndescription: renamed brainstorm command\nagent: idea-explorer\n---\n',
+  );
+
+  const output = (await validateDistribution(root))
+    .map(({ path, message }) => `${path}: ${message}`)
+    .join('\n');
+  assert.match(output, /missing required production agent "brainstormer"/);
+  assert.match(output, /agents\/idea-explorer: unexpected production agent name "idea-explorer"/);
+  assert.match(output, /missing required production command "brainstorm"/);
+  assert.match(output, /commands\/idea-session: unexpected production command name "idea-session"/);
+});
+
 test('requires the exact non-empty production custom tool source', async (t) => {
   const root = await productionDistribution(t);
   const toolFile = join(root, 'tools', 'create_issue.js');
@@ -299,6 +321,7 @@ test('requires the exact non-empty production custom tool source', async (t) => 
 test('requires exact production agent modes and command mappings', async (t) => {
   const root = await productionDistribution(t);
   const agentModes = new Map([
+    ['brainstormer', 'primary'],
     ['orchestrator', 'primary'],
     ['implementer', 'subagent'],
     ['reviewer', 'subagent'],
@@ -307,7 +330,7 @@ test('requires exact production agent modes and command mappings', async (t) => 
   ]);
   for (const [name, expectedMode] of agentModes) {
     const wrongMode = expectedMode === 'primary' ? 'subagent' : 'primary';
-    const defaultPermission = name === 'task-shaper' ? 'deny' : 'allow';
+    const defaultPermission = ['brainstormer', 'researcher', 'task-shaper'].includes(name) ? 'deny' : 'allow';
     const createIssuePermission = name === 'task-shaper' ? 'allow' : 'deny';
     const file = join(root, 'agents', `${name}.md`);
     await writeFile(
@@ -329,6 +352,7 @@ test('requires exact production agent modes and command mappings', async (t) => 
   }
 
   const commandAgents = new Map([
+    ['brainstorm', 'brainstormer'],
     ['orchestrate', 'orchestrator'],
     ['orchestrate-loop', 'orchestrator'],
     ['setup-project', 'orchestrator'],
@@ -383,9 +407,9 @@ test('requires exact production agent modes and command mappings', async (t) => 
 
 test('requires no-prompt permission actions for every production agent', async (t) => {
   const root = await productionDistribution(t);
-  for (const name of ['orchestrator', 'implementer', 'reviewer', 'researcher', 'task-shaper']) {
-    const mode = ['orchestrator', 'task-shaper'].includes(name) ? 'primary' : 'subagent';
-    const expectedDefault = name === 'task-shaper' ? 'deny' : 'allow';
+  for (const name of ['brainstormer', 'orchestrator', 'implementer', 'reviewer', 'researcher', 'task-shaper']) {
+    const mode = ['brainstormer', 'orchestrator', 'task-shaper'].includes(name) ? 'primary' : 'subagent';
+    const expectedDefault = ['brainstormer', 'researcher', 'task-shaper'].includes(name) ? 'deny' : 'allow';
     const wrongDefault = expectedDefault === 'allow' ? 'deny' : 'allow';
     const createIssuePermission = name === 'task-shaper' ? 'allow' : 'deny';
     const file = join(root, 'agents', `${name}.md`);
@@ -450,7 +474,7 @@ test('enforces the global deny and sole task-shaper create_issue override', asyn
   }
   await writeFile(templateFile, JSON.stringify(template));
 
-  for (const name of ['orchestrator', 'implementer', 'reviewer', 'researcher']) {
+  for (const name of ['brainstormer', 'orchestrator', 'implementer', 'reviewer', 'researcher']) {
     const file = join(root, 'agents', `${name}.md`);
     const content = await readFile(file, 'utf8');
     await writeFile(file, content.replace('  create_issue: deny', '  create_issue: allow'));
@@ -587,13 +611,17 @@ test('production agents use no-prompt defaults while preserving read-only shell 
   const config = JSON.parse(
     await readFile(new URL('../templates/opencode.json', import.meta.url), 'utf8'),
   );
-  for (const name of ['orchestrator', 'implementer', 'reviewer', 'researcher']) {
+  for (const name of ['orchestrator', 'implementer', 'reviewer']) {
     const content = await readFile(new URL(`${name}.md`, agents), 'utf8');
     assert.match(content, /^permission:\n  "\*": allow$/m, name);
     assert.doesNotMatch(content, /:\s*(?:ask|"ask"|'ask')\s*$/m, name);
     assert.equal(effectiveToolPermission(config.permission, content, 'create_issue'), 'deny', name);
   }
   const taskShaper = await readFile(new URL('task-shaper.md', agents), 'utf8');
+  const researcher = await readFile(new URL('researcher.md', agents), 'utf8');
+  assert.match(researcher, /^permission:\n  "\*": deny$/m);
+  assert.doesNotMatch(researcher, /:\s*(?:ask|"ask"|'ask')\s*$/m);
+  assert.equal(effectiveToolPermission(config.permission, researcher, 'create_issue'), 'deny');
   assert.match(taskShaper, /^permission:\n  "\*": deny$/m);
   assert.doesNotMatch(taskShaper, /:\s*(?:ask|"ask"|'ask')\s*$/m);
   assert.equal(effectiveToolPermission(config.permission, taskShaper, 'custom_plugin_mutate'), 'deny');
@@ -618,6 +646,7 @@ test('production agents use no-prompt defaults while preserving read-only shell 
   assert.equal(effectiveBashPermission(orchestratorRules, 'node custom-tool.mjs'), 'allow');
   assert.equal(effectiveBashPermission(implementerRules, 'node custom-tool.mjs'), 'allow');
   assert.equal(effectiveBashPermission(reviewerRules, 'node custom-tool.mjs'), 'deny');
+  assert.deepEqual(researcherRules, [{ pattern: '*', action: 'deny' }]);
   assert.equal(effectiveBashPermission(researcherRules, 'node custom-tool.mjs'), 'deny');
   assert.equal(effectiveBashPermission(taskShaperRules, 'node custom-tool.mjs'), 'deny');
   assert.equal(effectiveBashPermission(orchestratorRules, 'git reset --hard'), 'deny');
@@ -667,9 +696,219 @@ test('task-shaper is primary but non-default and permits only structured issue c
   }
 });
 
+test('brainstormer is a non-default read-only primary with bounded research delegation', async () => {
+  const brainstormer = await readFile(new URL('../agents/brainstormer.md', import.meta.url), 'utf8');
+  const command = await readFile(new URL('../commands/brainstorm.md', import.meta.url), 'utf8');
+  const config = JSON.parse(
+    await readFile(new URL('../templates/opencode.json', import.meta.url), 'utf8'),
+  );
+  const rules = bashPermissionRules(brainstormer);
+
+  assert.match(brainstormer, /^mode: primary$/m);
+  assert.equal(config.default_agent, 'orchestrator');
+  assert.match(command, /^agent: brainstormer$/m);
+  assert.match(brainstormer, /^permission:\n  "\*": deny$/m);
+  assert.doesNotMatch(brainstormer, /:\s*(?:ask|"ask"|'ask')\s*$/m);
+  assert.match(brainstormer, /^  edit: deny$/m);
+  assert.match(brainstormer, /^  todowrite: deny$/m);
+  assert.match(brainstormer, /^  question: allow$/m);
+  assert.match(brainstormer, /^  webfetch: deny$/m);
+  assert.match(brainstormer, /^  websearch: deny$/m);
+  assert.match(brainstormer, /^  skill: deny$/m);
+  assert.match(brainstormer, /^  lsp: deny$/m);
+  assert.match(brainstormer, /^  task:\n    "\*": deny\n    researcher: allow$/m);
+  assert.doesNotMatch(brainstormer, /^    (?:implementer|reviewer): allow$/m);
+  assert.equal(effectiveToolPermission(config.permission, brainstormer, 'create_issue'), 'deny');
+  assert.equal(effectiveToolPermission(config.permission, brainstormer, 'todowrite'), 'deny');
+  assert.equal(effectiveToolPermission(config.permission, brainstormer, 'custom_plugin_mutate'), 'deny');
+
+  assert.deepEqual(rules, [{ pattern: '*', action: 'deny' }]);
+  assert.equal(rules.some(({ action }) => action === 'allow'), false);
+  // OpenCode may permission-check compound input as separate commands. With no
+  // allow rule, both every parsed component and an unparsed fallback deny.
+  for (const invocation of [
+    'git status',
+    'git branch --show-current',
+    'git diff',
+    'git log',
+    'git show',
+    'git push origin HEAD',
+    'gh issue list --state all',
+    'governance validate-project /workspace/example',
+    'git status; git push origin HEAD',
+    'git status && git push origin HEAD',
+    'git status || git push origin HEAD',
+    'git status | write-helper',
+    'git status > status.txt',
+    'write-helper',
+  ]) {
+    assert.equal(effectiveBashPermission(rules, invocation), 'deny', invocation);
+  }
+});
+
+test('researcher permits named research capabilities without shell or LSP execution', async () => {
+  const researcher = await readFile(new URL('../agents/researcher.md', import.meta.url), 'utf8');
+  const config = JSON.parse(
+    await readFile(new URL('../templates/opencode.json', import.meta.url), 'utf8'),
+  );
+  const rules = bashPermissionRules(researcher);
+
+  assert.match(researcher, /^permission:\n  "\*": deny$/m);
+  assert.match(researcher, /^  read:\n    "\*": allow\n    "\*\.env": deny\n    "\*\.env\.\*": deny\n    "\*\.env\.example": allow$/m);
+  for (const tool of ['glob', 'grep', 'list', 'webfetch', 'websearch', 'skill']) {
+    assert.equal(effectiveToolPermission(config.permission, researcher, tool), 'allow', tool);
+  }
+  assert.match(researcher, /^  lsp: deny$/m);
+  for (const tool of [
+    'edit',
+    'task',
+    'question',
+    'lsp',
+    'create_issue',
+    'custom_plugin_mutate',
+    'mcp_github_create_issue',
+  ]) {
+    assert.equal(effectiveToolPermission(config.permission, researcher, tool), 'deny', tool);
+  }
+  assert.match(researcher, /^  external_directory:\n    "\*": deny\n    "~\/\.local\/share\/opencode\/tool-output\/\*\*": allow\n    "\/tmp\/opencode\/\*\*": allow$/m);
+  assert.match(researcher, /native file tools, including tool-output reads/i);
+  assert.match(researcher, /native web tools for external research/i);
+  assert.match(researcher, /skills only for procedural guidance/i);
+  assert.match(researcher, /never .*use shell commands or LSP/i);
+  assert.deepEqual(rules, [{ pattern: '*', action: 'deny' }]);
+  assert.equal(rules.some(({ action }) => action === 'allow'), false);
+  // The catch-all denies every command OpenCode derives from compound input; no
+  // raw separator pattern is relied upon as a parser boundary.
+  for (const invocation of [
+    'git status',
+    'git branch --show-current',
+    'git diff',
+    'git log',
+    'git show HEAD',
+    'git remote -v',
+    'gh issue view 1',
+    'node research.mjs',
+    'curl https://example.com',
+    'git status; gh issue view 1',
+    'git diff > result.patch',
+    'gh issue view 1 | write-helper',
+    'write-helper',
+  ]) {
+    assert.equal(effectiveBashPermission(rules, invocation), 'deny', invocation);
+  }
+});
+
+test('brainstorm prompt enforces staged exploration, explicit selection, and exploratory handoff', async () => {
+  const brainstormer = await readFile(new URL('../agents/brainstormer.md', import.meta.url), 'utf8');
+  const command = await readFile(new URL('../commands/brainstorm.md', import.meta.url), 'utf8');
+  const retentionContracts = new Map([
+    ['agents/brainstormer.md', brainstormer],
+    ['commands/brainstorm.md', command],
+    ['README.md', await readFile(new URL('../README.md', import.meta.url), 'utf8')],
+    ['docs/design.md', await readFile(new URL('../docs/design.md', import.meta.url), 'utf8')],
+    ['docs/implementation-plan.md', await readFile(new URL('../docs/implementation-plan.md', import.meta.url), 'utf8')],
+    ['docs/operations.md', await readFile(new URL('../docs/operations.md', import.meta.url), 'utf8')],
+    ['docs/roadmap.md', await readFile(new URL('../docs/roadmap.md', import.meta.url), 'utf8')],
+  ]);
+
+  for (const phrase of [
+    'Frame the problem before proposing solutions',
+    'Explore` for broad possibilities',
+    'Ask exactly one material question per turn',
+    'After roughly five questions',
+    'impact times uncertainty',
+    'Diverge before converging',
+    'two to four genuinely distinct candidate directions',
+    'measurable, implementation-independent observable outcome',
+    'Compare every candidate against those criteria before recommending one',
+    'Pressure-test the preferred direction',
+    'Never translate a recommendation into a selection',
+    'Verified Evidence` and `Hypotheses`',
+    'rabbit holes, no-gos',
+    'Selected Concept Brief',
+    'Exploratory only - not an implementation task, approval to build, or published issue',
+  ]) {
+    assert.match(brainstormer, new RegExp(phrase), phrase);
+  }
+  assert.match(brainstormer, /selecting one direction, another divergence round.*researching first, deferring, rejecting the premise, or deciding not to build/i);
+  for (const posture of ['expand', 'selectively expand', 'hold', 'reduce']) {
+    assert.match(brainstormer, new RegExp(`\\b${posture}\\b`), posture);
+  }
+  assert.match(brainstormer, /For every substantive brainstorm.*state both the best-fit exploration mode and ambition posture/i);
+  assert.match(brainstormer, /the user may override either/i);
+  assert.match(brainstormer, /trivial session may skip this ceremony only when it ends without substantive synthesis/i);
+  assert.match(brainstormer, /reflect the chosen ambition posture in candidate scope and comparison wherever it is material/i);
+  assert.match(brainstormer, /`Exploration Mode and Ambition Posture`.*including any user override/i);
+  assert.match(brainstormer, /current-repository issue, pull request, or other GitHub metadata.*delegate one bounded read-only question with repository or source scope and stopping criteria/i);
+  assert.match(brainstormer, /researcher is the sole GitHub and web research path/i);
+  assert.match(brainstormer, /`Status`: `candidates`, `selected`, `research-needed`, `deferred`, `rejected-premise`, or `do-not-build`/i);
+  assert.match(brainstormer, /`rejected-premise` when the problem framing or premise is invalid.*`do-not-build` when the problem is valid but does not justify a build/i);
+  for (const section of [
+    'Status',
+    'Exploration Mode and Ambition Posture',
+    'Problem',
+    'Verified Evidence',
+    'Hypotheses',
+    'Appetite and Constraints',
+    'User Decision or Current Owner',
+    'Disclaimer',
+  ]) {
+    assert.match(brainstormer, new RegExp(`Every status[\\s\\S]*\`${section}\``), section);
+  }
+  assert.match(brainstormer, /`candidates`: include `Candidate Directions`.*`Comparison`.*`Recommendation`.*`Pressure Test`.*Do not include a `Selected Concept Brief` or `Next Step`/i);
+  assert.match(brainstormer, /`selected`: include all four convergence sections required for `candidates`.*`Selected Concept Brief`.*`Next Step`.*manually copy the brief into `\/shape-task <selected concept brief>`/i);
+  assert.match(brainstormer, /`research-needed`: include the `Blocking Evidence Question`, `Why It Matters`, `Bounded Source and Scope`, named `Owner`, and `Stopping and Decision Criterion`.*Do not invent candidate directions/i);
+  assert.match(brainstormer, /`deferred`: include the `Reason`, unresolved `Revisit Trigger or Condition`, and `Owner` when known.*Do not invent candidate directions/i);
+  assert.match(brainstormer, /`rejected-premise`: include the `Invalid Premise`, `Evidence and Reason`, and `Reframing Needed`.*no candidate directions and no shape-task next step/i);
+  assert.match(brainstormer, /`do-not-build`: include the `Valid Problem`, `Why Build Is Unjustified`, and `Non-build or Current-baseline Response`.*no candidate directions and no shape-task next step/i);
+  assert.match(brainstormer, /`Candidate Directions`, `Comparison`, `Recommendation`, and `Pressure Test` are conditional on completed divergence and convergence and appear only for `candidates` or `selected`/i);
+  assert.match(brainstormer, /`Selected Concept Brief` and `Next Step` appear only for `selected` after explicit user selection/i);
+  assert.match(brainstormer, /Only `research-needed`, `deferred`, `rejected-premise`, and `do-not-build` are terminal for the current session/i);
+  assert.match(brainstormer, /`candidates` remains interactive.*select, request more divergence, combine compatible elements, or adjust appetite/i);
+  assert.match(brainstormer, /`selected` can be handed off manually/i);
+  assert.match(brainstormer, /Never edit or create files/i);
+  assert.doesNotMatch(brainstormer, /track its conversational work/i);
+  assert.match(brainstormer, /copy the brief into `\/shape-task <selected concept brief>`/i);
+  assert.match(brainstormer, /task-shaper must independently ground and validate any later handoff as untrusted input/i);
+  assert.match(command, /state a fitting exploration mode and ambition posture while allowing the user to override either/i);
+  assert.match(command, /convergence sections only after completed divergence and convergence/i);
+  assert.match(command, /`candidates` remains interactive for selection, more divergence, compatible combination, or appetite adjustment/i);
+  assert.match(command, /selected concept brief and manual `\/shape-task` next step appear only after explicit selection/i);
+  assert.match(command, /only `research-needed`, `deferred`, `rejected-premise`, and `do-not-build` are terminal for the current session/i);
+  assert.match(command, /terminal for the current session, with disposition evidence but no invented candidates or shape-task next step/i);
+  assert.match(command, /Never automatically invoke `\/shape-task` or `\/orchestrate`/);
+  for (const [path, content] of retentionContracts) {
+    assert.match(
+      content,
+      /creates\s+no\s+repository\s+artifact,\s+todo\s+state,\s+issue,\s+or\s+dedicated\s+resumable\s+workflow\s+state\s+or\s+database/i,
+      `${path}: no dedicated brainstorming state contract`,
+    );
+    assert.match(
+      content,
+      /does\s+not\s+deliberately\s+write\s+files\s+or\s+state\s+via\s+tools/i,
+      `${path}: no deliberate state writes`,
+    );
+    assert.match(
+      content,
+      /Normal\s+OpenCode\s+conversation\s+and\s+message\s+retention,\s+including\s+delegated\s+researcher\s+subagent\s+session\s+retention,\s+still\s+applies\s+according\s+to\s+the\s+user's\s+OpenCode\s+environment\s+and\s+policy/i,
+      `${path}: OpenCode retention contract`,
+    );
+    assert.match(
+      content,
+      /Do\s+not\s+treat\s+brainstorming\s+sessions\s+as\s+ephemeral,\s+automatically\s+cleaned\s+up,\s+or\s+safe\s+for\s+secrets/i,
+      `${path}: retention safety warning`,
+    );
+    assert.doesNotMatch(content, /persists no session state/i, `${path}: obsolete literal promise`);
+  }
+  assert.match(
+    retentionContracts.get('docs/roadmap.md'),
+    /dedicated\s+or\s+persistent\s+resumable\s+brainstorming\s+workflow\s+state\s+or\s+databases\.\s+Normal\s+OpenCode\s+runtime\s+session\s+history\s+is\s+not\s+part\s+of\s+this\s+deferral/is,
+  );
+});
+
 test('read-only remote discovery cannot be extended into remote mutation', async () => {
   const agents = new URL('../agents/', import.meta.url);
-  for (const name of ['orchestrator', 'researcher', 'task-shaper']) {
+  for (const name of ['orchestrator', 'task-shaper']) {
     const rules = bashPermissionRules(await readFile(new URL(`${name}.md`, agents), 'utf8'));
     assert.equal(effectiveBashPermission(rules, 'git remote -v'), 'allow', name);
     for (const command of [
@@ -874,11 +1113,16 @@ test('production non-editing agents retain exact pushes and shell write protecti
     );
   }
 
-  for (const name of ['orchestrator', 'reviewer', 'researcher']) {
+  for (const name of ['orchestrator', 'reviewer']) {
     const content = await readFile(new URL(`${name}.md`, agents), 'utf8');
     for (const command of ['git diff', 'git show', 'git log']) {
       assert.match(content, new RegExp(`^    "${command}\\*--output\\*": deny$`, 'm'));
       assert.match(content, new RegExp(`^    "${command}\\*>\\*": deny$`, 'm'));
     }
+  }
+
+  const brainstormer = await readFile(new URL('brainstormer.md', agents), 'utf8');
+  for (const command of ['git diff', 'git show', 'git log']) {
+    assert.doesNotMatch(brainstormer, new RegExp(`^    "${command}\\*`, 'm'));
   }
 });

@@ -13,18 +13,18 @@ async function writeProductionDistribution(root) {
   await mkdir(join(root, 'commands'), { recursive: true });
   await mkdir(join(root, 'tools'), { recursive: true });
   await mkdir(join(root, 'templates', '.github', 'ISSUE_TEMPLATE'), { recursive: true });
-  for (const name of ['orchestrator', 'implementer', 'reviewer', 'researcher', 'task-shaper']) {
-    const defaultPermission = name === 'task-shaper' ? 'deny' : 'allow';
+  for (const name of ['brainstormer', 'orchestrator', 'implementer', 'reviewer', 'researcher', 'task-shaper']) {
+    const defaultPermission = ['brainstormer', 'researcher', 'task-shaper'].includes(name) ? 'deny' : 'allow';
     const createIssuePermission = name === 'task-shaper' ? 'allow' : 'deny';
     await writeFile(
       join(root, 'agents', `${name}.md`),
-      `---\ndescription: ${name} agent\nmode: ${['orchestrator', 'task-shaper'].includes(name) ? 'primary' : 'subagent'}\npermission:\n  "*": ${defaultPermission}\n  create_issue: ${createIssuePermission}\n---\n`,
+      `---\ndescription: ${name} agent\nmode: ${['brainstormer', 'orchestrator', 'task-shaper'].includes(name) ? 'primary' : 'subagent'}\npermission:\n  "*": ${defaultPermission}\n  create_issue: ${createIssuePermission}\n---\n`,
     );
   }
-  for (const name of ['orchestrate', 'orchestrate-loop', 'setup-project', 'review', 'shape-task']) {
+  for (const name of ['brainstorm', 'orchestrate', 'orchestrate-loop', 'setup-project', 'review', 'shape-task']) {
     await writeFile(
       join(root, 'commands', `${name}.md`),
-      `---\ndescription: ${name} command\nagent: ${name === 'review' ? 'reviewer' : name === 'shape-task' ? 'task-shaper' : 'orchestrator'}\n---\n`,
+      `---\ndescription: ${name} command\nagent: ${name === 'brainstorm' ? 'brainstormer' : name === 'review' ? 'reviewer' : name === 'shape-task' ? 'task-shaper' : 'orchestrator'}\n---\n`,
     );
   }
   await writeFile(join(root, 'tools', 'create_issue.js'), 'export default {};\n');
@@ -203,6 +203,7 @@ test('distribution CLI requires production composition while retaining reference
   t.after(() => rm(root, { recursive: true, force: true }));
   await writeProductionDistribution(root);
   await rm(join(root, 'agents/reviewer.md'));
+  await rm(join(root, 'commands/brainstorm.md'));
   await writeFile(
     join(root, 'commands/review.md'),
     '---\ndescription: Runs work\nagent: reviewer\n---\n',
@@ -213,6 +214,7 @@ test('distribution CLI requires production composition while retaining reference
   });
   assert.equal(result.status, 1);
   assert.match(result.stderr, /missing required production agent "reviewer"/);
+  assert.match(result.stderr, /missing required production command "brainstorm"/);
   assert.match(result.stderr, /field "agent" references missing agent "reviewer"/);
-  assert.match(result.stderr, /Validation failed with 2 error/);
+  assert.match(result.stderr, /Validation failed with 3 error/);
 });

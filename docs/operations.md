@@ -68,8 +68,8 @@ denied. Use a separate credential or invocation context when operational policy
 requires the orchestrator and task-shaper to have different token scopes.
 The active `opencode.json` must also carry the template's global
 `create_issue: deny` permission. Agent rules take precedence over global rules, so
-the task-shaper explicitly overrides it to allow while orchestrator, implementer,
-reviewer, and researcher explicitly deny the tool.
+the task-shaper explicitly overrides it to allow while brainstormer, orchestrator,
+implementer, reviewer, and researcher explicitly deny the tool.
 
 Do not grant administration, branch-protection bypass, workflow modification,
 secret-management, deployment, package deletion, or force-push capability. Store
@@ -119,6 +119,49 @@ independent review.
 
 7. Run one supervised single task before enabling backlog mode.
 
+## Exploring a direction
+
+Brainstorming is optional. Invoke it when a topic needs problem discovery, distinct
+alternatives, appetite calibration, or pressure-testing before task shaping:
+
+```text
+/brainstorm <topic>
+```
+
+The brainstormer remains read-only. It grounds repository-dependent ideas with native
+file tools and has no shell access, so it does not run project validation or shell
+Git. Materially missing dynamic repository state or local history becomes bounded
+research-needed work or is left for task shaping rather than routed through the
+researcher. The researcher is its sole path for bounded GitHub or web research and
+also has no shell or LSP execution. Its deny-default policy enables only named native
+file tools, native web tools, skill guidance, and reads from explicitly allowed
+tool-output paths; unspecified custom, plugin, and MCP tools deny immediately.
+It asks one material question per turn, diverges before comparing options, and
+reports `selected` only after the user explicitly chooses it. It may instead return
+`research-needed`, `deferred`,
+`rejected-premise`, or `do-not-build`. `rejected-premise` means the problem framing
+or premise is invalid; `do-not-build` means a valid problem does not justify a build.
+Candidate comparison, recommendation, and pressure-test sections appear only after
+completed divergence and convergence. A Selected Concept Brief and manual
+`/shape-task` next step appear only for `selected`; terminal statuses carry their
+blocking or disposition evidence and never a shape-task next step.
+`candidates` is not terminal: the user may select, request more divergence, combine
+compatible elements, or adjust appetite. `selected` can be handed off manually.
+`/brainstorm` creates no repository artifact, todo state, issue, or dedicated
+resumable workflow state or database, and it does not deliberately write files or
+state via tools. Normal OpenCode conversation and message retention, including
+delegated researcher subagent session retention, still applies according to the
+user's OpenCode environment and policy. Do not treat brainstorming sessions as
+ephemeral, automatically cleaned up, or safe for secrets. It never asks for
+publication approval or starts shaping or implementation.
+
+For a selected direction, manually copy the emitted Selected Concept Brief into
+`/shape-task`. That brief is exploratory and untrusted, so the task-shaper repeats
+repository grounding, duplicate and overlap discovery, product and technical
+decision work, readiness checks, and exact draft approval. This gives the optional
+flow `/brainstorm -> /shape-task -> /orchestrate`; no stage invokes the next one
+automatically.
+
 ## Shaping a task
 
 Invoke `/shape-task` with brainstorming, not a prewritten four-field form:
@@ -126,6 +169,8 @@ Invoke `/shape-task` with brainstorming, not a prewritten four-field form:
 ```text
 /shape-task <brainstorm for one possible outcome>
 ```
+
+Direct shaping remains supported; `/brainstorm` is not a prerequisite.
 
 The task-shaper inspects repository guidance, configuration, docs, source, tests,
 CI, history, and open and closed issues before publication. It narrows the input to
@@ -248,7 +293,8 @@ Merge the required values from
 `templates/opencode.json` manually, preserve existing providers and MCP servers, and
 keep the configured skill path aligned with the installation target. Preserve the
 global `create_issue: deny`; the installed task-shaper is the sole production agent
-whose agent-level rule overrides it to allow.
+whose agent-level rule overrides it to allow. The brainstormer explicitly retains
+the deny.
 
 Close or stop active OpenCode sessions before replacing the distribution. After
 apply, restart OpenCode so it reloads agents, commands, custom tools, skills, and

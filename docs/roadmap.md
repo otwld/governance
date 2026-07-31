@@ -7,7 +7,18 @@ Dates or feature novelty alone do not justify expanding the trust boundary.
 ## Included in V1
 
 - Explicit single-task and sequential GitHub Project backlog modes.
-- Separate task-shaper, orchestrator, implementer, reviewer, and researcher roles.
+- Separate brainstormer, task-shaper, orchestrator, implementer, reviewer, and
+  researcher roles.
+- Optional read-only problem exploration with distinct alternatives, explicit
+  comparison, pressure-testing, distinct `rejected-premise` and `do-not-build`
+  terminal exits, interactive candidate refinement, and a manually transferred
+  concept brief only after user selection.
+- `/brainstorm` creates no repository artifact, todo state, issue, or dedicated
+  resumable workflow state or database, and it does not deliberately write files or
+  state via tools. Normal OpenCode conversation and message retention, including
+  delegated researcher subagent session retention, still applies according to the
+  user's OpenCode environment and policy. Do not treat brainstorming sessions as
+  ephemeral, automatically cleaned up, or safe for secrets.
 - Approval-gated shaping of one brainstorm after repository discovery, duplicate
   detection, bounded clarification, and an implementation-readiness gate.
 - Least-privilege tool and GitHub operation boundaries.
@@ -32,6 +43,9 @@ Dates or feature novelty alone do not justify expanding the trust boundary.
   labels, or repository policy.
 - Automatic issue publication without display and explicit human approval, and
   mutation of existing issue content or metadata by the task-shaper.
+- Automatic transition from brainstorming to shaping or orchestration, and dedicated
+  or persistent resumable brainstorming workflow state or databases. Normal OpenCode
+  runtime session history is not part of this deferral.
 - Automatic resolution of ambiguous Project mappings or conflicting active work.
 - Administrative merges, force pushes, deployment, rollback, and secret management.
 - Unbounded retries, self-approval, review bypass, and CI bypass.

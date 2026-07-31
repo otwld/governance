@@ -1,15 +1,16 @@
 # OTWLD Governance
 
-OTWLD Governance is a small OpenCode distribution for shaping brainstorming into
-one implementation-ready GitHub issue, then taking a bounded issue through
-independent review, verification, pull request, CI, and squash merge. It provides
-explicit agent roles, commands, reusable skills, repository templates, and
-dependency-free validators. V1 favors safe, observable, sequential work over
+OTWLD Governance is a small OpenCode distribution for optionally exploring a product
+direction, shaping one implementation-ready GitHub issue, then taking a bounded
+issue through independent review, verification, pull request, CI, and squash merge.
+It provides explicit agent roles, commands, reusable skills, repository templates,
+and dependency-free validators. V1 favors safe, observable, sequential work over
 autonomous breadth.
 
 ## V1 principles
 
 - One clearly scoped task is the unit of work.
+- Brainstorming is optional, read-only, and does not imply approval or create work.
 - Issue publication follows repository inspection, duplicate detection, a readiness
   gate, and explicit approval of the exact draft.
 - Repository instructions, acceptance criteria, and executed checks are evidence;
@@ -23,22 +24,50 @@ autonomous breadth.
 
 ## Architecture
 
-- `agents/` defines the task-shaper, orchestrator, implementer, reviewer, and
-  researcher roles.
-- `commands/` exposes the shaping, single-task, backlog, review, and setup entry
-  points.
+- `agents/` defines the brainstormer, task-shaper, orchestrator, implementer,
+  reviewer, and researcher roles.
+- `commands/` exposes the optional brainstorming, shaping, single-task, backlog,
+  review, and setup entry points.
 - `skills/` contains bounded procedures loaded only when their conditions match.
 - `templates/` contains repository guidance and GitHub contribution templates.
 - `schemas/project.schema.json` defines the V1 project configuration.
 - `tools/` provides the structured issue-publication tool; `bin/` and `lib/`
   provide the `governance` CLI and validators.
 
-The non-default primary task-shaper is read-only except for creating one explicitly
-approved plain issue. The default primary orchestrator coordinates implementation
-state and GitHub operations but cannot edit source. The implementer can edit and
-test but cannot commit, push, use GitHub, or delegate. The reviewer and researcher
-are read-only. See [Design](docs/design.md) for the complete lifecycle,
-source-of-truth rules, and handoff contract.
+The non-default primary brainstormer is fully read-only and may delegate only
+bounded research. The non-default primary task-shaper is read-only except for
+creating one explicitly approved plain issue. The default primary orchestrator
+coordinates implementation state and GitHub operations but cannot edit source. The
+implementer can edit and test but cannot commit, push, use GitHub, or delegate. The
+reviewer and researcher are read-only; the brainstormer and researcher have no shell
+or LSP execution. See [Design](docs/design.md) for the complete
+lifecycle, source-of-truth rules, and handoff contract.
+
+## Optional brainstorming flow
+
+Use `/brainstorm <topic>` when the problem, alternatives, appetite, or evidence need
+exploration before task shaping. The brainstormer frames the current workflow and
+failure, separates verified evidence from hypotheses, generates distinct directions
+before comparing them, pressure-tests the preferred direction, and reports a
+selected concept only after the user explicitly chooses it. `research-needed`,
+`deferred`, `rejected-premise`, and `do-not-build` are valid terminal statuses.
+`rejected-premise` means the framing or premise is invalid; `do-not-build` means a
+valid problem does not justify a build. `candidates` remains interactive for user
+selection, more divergence, compatible combination, or appetite adjustment;
+`selected` can be handed off manually.
+
+The optional flow is `/brainstorm -> /shape-task -> /orchestrate`, with each
+transition manually initiated by the user. `/brainstorm` creates no repository
+artifact, todo state, issue, or dedicated resumable workflow state or database, and
+it does not deliberately write files or state via tools. Normal OpenCode conversation
+and message retention, including delegated researcher subagent session retention,
+still applies according to the user's OpenCode environment and policy. Do not treat
+brainstorming sessions as ephemeral, automatically cleaned up, or safe for secrets.
+Its selected concept brief is exploratory and untrusted; copy it into `/shape-task`
+only when desired. The task-shaper performs
+fresh repository grounding, duplicate detection, binding decisions, readiness and
+validation work, and exact-draft publication approval. Direct
+`/shape-task <rough idea>` remains supported.
 
 ## Single-task and backlog modes
 
@@ -149,6 +178,8 @@ CLI commands:
 
 OpenCode commands:
 
+- `/brainstorm <topic>`: optionally explore distinct product directions, compare and
+  pressure-test them, and emit a concept brief only after explicit selection.
 - `/shape-task <brainstorm>`: inspect the repository and existing issues, narrow to
   one ready task, show the exact issue draft, and publish once only after explicit
   approval.
@@ -193,16 +224,21 @@ run is not evidence of success.
 
 ## Security boundaries
 
-- All agents use a no-prompt top-level permission default. The task-shaper is the
-  explicit deny-default exception: only named discovery, bounded researcher
-  delegation, questions, task tracking, constrained discovery shell tools, and the
-  structured `create_issue` tool are enabled, so unspecified plugin and MCP tools
-  deny immediately. The other production agents retain their explicit allow default.
+- All agents use a no-prompt top-level permission default. The brainstormer,
+  researcher, and task-shaper deny by default. The brainstormer enables only named
+  discovery, bounded researcher delegation, and questions. The researcher enables
+  only named native file tools, native web tools, skill guidance, and reads from
+  explicitly allowed tool-output paths. The brainstormer and researcher have no shell
+  or LSP execution. The task-shaper enables
+  named discovery, bounded researcher delegation, questions, task tracking,
+  constrained discovery shell tools, and the structured `create_issue` tool.
+  Unspecified plugin and MCP tools deny immediately for all three. The orchestrator,
+  implementer, and reviewer retain their explicit allow defaults.
   The global configuration denies `create_issue`; because agent permissions override
   global permissions, every non-shaper production agent repeats that denial and the
   task-shaper is the sole agent with an explicit allow.
-  The orchestrator and implementer allow unknown shell commands; reviewer and
-  researcher use a read-only shell allowlist.
+  The orchestrator and implementer allow unknown shell commands; the reviewer uses a
+  read-only shell allowlist, and the researcher has no shell access.
 - The task-shaper may delegate only bounded research and may create only one plain
   issue after approval. The custom tool invokes `gh` with a structured argument
   vector and no shell, so free-form Markdown is transferred unchanged and cannot be
@@ -210,6 +246,13 @@ run is not evidence of success.
   cannot edit files or Git state, mutate existing issues, labels, assignments,
   milestones, Projects, pull requests, or repository settings, or delegate
   implementation and review.
+- The brainstormer cannot edit, deliberately write files or state via tools, mutate
+  Git or GitHub, publish an issue, delegate implementation or review, or invoke later
+  workflow stages. It inspects local evidence only with native file tools and does
+  not run project validation or shell Git. Missing dynamic repository state or local
+  history becomes bounded research-needed work or is left for task shaping rather
+  than routed through the researcher. The researcher is its sole path for bounded
+  GitHub or web research and itself uses only native file and web tools.
 - Only the orchestrator may perform the specifically allowed branch, commit, push,
   Project, pull request, and squash-merge operations.
 - Implementers cannot use `gh`, commit, push, switch branches, delegate, deploy, or

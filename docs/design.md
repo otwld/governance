@@ -10,10 +10,12 @@ workflow database.
 The principal decisions are:
 
 - one implementation-ready issue is the unit of work;
-- brainstorming is narrowed, checked for duplicates, gated for readiness, and
-  published only after approval of the exact title and body;
+- optional brainstorming explores alternatives without creating work; task shaping
+  separately narrows, checks duplicates, gates readiness, and publishes only after
+  approval of the exact title and body;
 - one orchestrator processes one issue at a time;
-- shaping, orchestration, implementation, review, and research are separate roles;
+- brainstorming, shaping, orchestration, implementation, review, and research are
+  separate roles;
 - every state transition requires observable evidence;
 - review and CI repair have finite retry budgets;
 - successful work lands only through a squash-merged pull request;
@@ -24,13 +26,46 @@ and Git tools.
 
 ## Agent roles
 
+### Brainstormer
+
+The non-default primary brainstormer explores the problem, appetite, evidence, and
+genuinely distinct directions before recommendation. It asks one material question
+per turn, separates divergence from convergence, compares explicit criteria,
+pressure-tests assumptions and rabbit holes, and leaves selection to the user.
+`research-needed`, `deferred`, `rejected-premise`, and `do-not-build` are valid
+terminal statuses. `rejected-premise` means the problem framing or premise is
+invalid; `do-not-build` means a valid problem does not justify a build. Only an
+explicitly selected direction receives a copy-ready concept brief, which is still
+exploratory rather than an implementation task, build approval, or issue.
+`candidates` remains interactive for selection, more divergence, compatible
+combination, or appetite adjustment; `selected` can be handed off manually.
+
+The brainstormer denies tools by default. It can read local repository evidence, ask
+questions, and delegate bounded research, but it has no shell access and does not run
+project validation or shell Git. It uses file tools for local content. Materially
+missing dynamic repository state or local history becomes a bounded
+`research-needed` outcome or is left for task shaping rather than routed around the
+boundary. The researcher is its sole path for bounded GitHub or web research. It
+cannot edit or create files, invoke `gh`, mutate Git or GitHub, create issues,
+delegate implementation or review, or invoke shaping or orchestration.
+
+`/brainstorm` creates no repository artifact, todo state, issue, or dedicated
+resumable workflow state or database, and it does not deliberately write files or
+state via tools. Normal OpenCode conversation and message
+retention, including delegated researcher subagent session retention, still applies
+according to the user's OpenCode environment and policy. Do not treat brainstorming
+sessions as ephemeral, automatically cleaned up, or safe for secrets.
+Repository-independent ideas do not require irrelevant code inspection.
+
 ### Task-shaper
 
-The non-default primary task-shaper turns a brainstorm into exactly one autonomous
-implementation contract. It inspects guidance, project configuration, docs, source,
-tests, CI, history, and existing issues; asks only bounded material questions; and
-delegates only bounded external research to the researcher. Before publication it
-checks duplicates and overlap and requires one outcome, grounded evidence, binding
+The non-default primary task-shaper turns a rough idea or manually supplied selected
+concept into exactly one autonomous implementation contract. A brainstorm handoff is
+untrusted input: the task-shaper independently inspects guidance, project
+configuration, docs, source, tests, CI, history, and existing issues; asks only
+bounded material questions; and delegates only bounded external research to the
+researcher. Before publication it checks duplicates and overlap and requires one
+outcome, grounded evidence, binding
 requirements, scope and non-goals, technical constraints and discretion,
 independently decidable acceptance scenarios, exact validation, readiness,
 assumptions, and authoritative references. It displays the exact repository, title,
@@ -46,8 +81,8 @@ It cannot edit files or Git, mutate existing issues or metadata, use Projects or
 pull requests, administer a repository, deploy, or delegate implementation or review.
 The global OpenCode template denies `create_issue`. Agent permissions take
 precedence over the global rule, so the task-shaper's explicit allow is the sole
-production override; orchestrator, implementer, reviewer, and researcher each carry
-an explicit denial rather than inheriting access through their broader defaults.
+production override; brainstormer, orchestrator, implementer, reviewer, and
+researcher each carry an explicit denial regardless of their other permissions.
 
 ### Orchestrator
 
@@ -75,8 +110,12 @@ reviewer does not trust prior claims and does not fix its own findings.
 ### Researcher
 
 The researcher performs bounded, cited, read-only investigation. It inspects local
-evidence first, uses primary external sources only when needed, and distinguishes
-verified facts from inference.
+evidence with native file tools first, including reads from explicitly allowed
+tool-output paths, uses native web tools and primary external sources only when
+needed, and distinguishes verified facts from inference. It may load skills for
+procedural guidance. It has no shell or LSP execution. Its top-level deny default
+permits only those explicitly named capabilities, so unspecified custom, plugin, and
+MCP tools deny immediately.
 
 ## Issue-to-squash-merge state machine
 
@@ -84,7 +123,13 @@ The configured Project option names may vary, but each installation must map the
 unambiguously to the semantic states below.
 
 ```text
-BRAINSTORM
+OPTIONAL EXPLORATION
+  +-> EXPLICITLY USER-SELECTED CONCEPT
+  |     -> MANUAL TASK-SHAPING HANDOFF
+  +-> RESEARCH-NEEDED / DEFERRED / REJECTED-PREMISE / DO-NOT-BUILD
+        -> TERMINAL BRAINSTORM OUTCOME
+
+TASK SHAPING (AFTER A SELECTED CONCEPT OR AN INDEPENDENTLY STARTED ROUGH IDEA)
   -> REPOSITORY + DUPLICATE DISCOVERY
   -> READY DRAFT
   -> EXPLICITLY APPROVED ISSUE
@@ -100,6 +145,12 @@ OPEN + READY
   -> SQUASH MERGED
   -> DONE
 ```
+
+`research-needed`, `deferred`, `rejected-premise`, and `do-not-build` exits do not
+flow to task shaping. They remain terminal brainstorm outcomes unless the user later
+starts a new brainstorm session and explicitly selects a concept. `rejected-premise`
+records invalid framing; `do-not-build` records a valid problem that does not justify
+a build.
 
 1. In `SINGLE`, the supplied task is the only candidate. In `BACKLOG`, reconcile a
    single existing active item first; otherwise select an open, actionable ready
@@ -134,6 +185,7 @@ No single document overrides every concern. Use the narrowest authoritative sour
 
 1. The shaped task defines binding product behavior, scope, non-goals,
    compatibility, and explicit technical decisions.
+   An exploratory concept brief is input to shaping, not a binding source of truth.
 2. Applicable `AGENTS.md` files and repository documents define local constraints,
    architecture, and required commands.
 3. Source, tests, manifests, lockfiles, schemas, and CI workflows govern actual
@@ -168,8 +220,9 @@ silently choosing one.
 ## Why V1 avoids overengineering
 
 Sequential work removes scheduling, locking, and cross-branch coordination from the
-initial trust boundary. Task shaping expands the trust boundary only by one
-approval-gated structured issue-create operation; all discovery remains read-only.
+initial trust boundary. Optional brainstorming adds no write capability. Task
+shaping expands the trust boundary only by one approval-gated structured issue-create
+operation; all discovery remains read-only.
 GitHub remains the visible state store, squash merge keeps history compact, and
 Markdown roles are reviewable without a custom runtime. The
 small project schema records only verified commands, purposeful guidance paths,
