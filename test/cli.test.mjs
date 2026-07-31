@@ -11,19 +11,23 @@ const cli = new URL('../bin/governance.mjs', import.meta.url);
 async function writeProductionDistribution(root) {
   await mkdir(join(root, 'agents'), { recursive: true });
   await mkdir(join(root, 'commands'), { recursive: true });
-  await mkdir(join(root, 'templates'), { recursive: true });
-  for (const name of ['orchestrator', 'implementer', 'reviewer', 'researcher']) {
+  await mkdir(join(root, 'tools'), { recursive: true });
+  await mkdir(join(root, 'templates', '.github', 'ISSUE_TEMPLATE'), { recursive: true });
+  for (const name of ['orchestrator', 'implementer', 'reviewer', 'researcher', 'task-shaper']) {
+    const defaultPermission = name === 'task-shaper' ? 'deny' : 'allow';
+    const createIssuePermission = name === 'task-shaper' ? 'allow' : 'deny';
     await writeFile(
       join(root, 'agents', `${name}.md`),
-      `---\ndescription: ${name} agent\nmode: ${name === 'orchestrator' ? 'primary' : 'subagent'}\npermission:\n  "*": deny\n---\n`,
+      `---\ndescription: ${name} agent\nmode: ${['orchestrator', 'task-shaper'].includes(name) ? 'primary' : 'subagent'}\npermission:\n  "*": ${defaultPermission}\n  create_issue: ${createIssuePermission}\n---\n`,
     );
   }
-  for (const name of ['orchestrate', 'orchestrate-loop', 'setup-project', 'review']) {
+  for (const name of ['orchestrate', 'orchestrate-loop', 'setup-project', 'review', 'shape-task']) {
     await writeFile(
       join(root, 'commands', `${name}.md`),
-      `---\ndescription: ${name} command\nagent: orchestrator\n---\n`,
+      `---\ndescription: ${name} command\nagent: ${name === 'review' ? 'reviewer' : name === 'shape-task' ? 'task-shaper' : 'orchestrator'}\n---\n`,
     );
   }
+  await writeFile(join(root, 'tools', 'create_issue.js'), 'export default {};\n');
   for (const name of [
     'dependency-upgrade',
     'nx-impact-analysis',
@@ -40,8 +44,22 @@ async function writeProductionDistribution(root) {
     join(root, 'templates/opencode.json'),
     JSON.stringify({
       default_agent: 'orchestrator',
+      permission: { create_issue: 'deny' },
       skills: { paths: ['/workspace/example-skills'] },
     }),
+  );
+  const fields = [
+    ['outcome', true], ['problem-evidence', true], ['requirements', true],
+    ['included-scope', true], ['out-of-scope', false], ['technical-direction', true],
+    ['repository-context', true], ['acceptance-scenarios', true], ['validation', true],
+    ['dependencies-readiness', true], ['assumptions', false], ['references', false],
+  ];
+  await writeFile(
+    join(root, 'templates', '.github', 'ISSUE_TEMPLATE', 'agent-task.yml'),
+    ['name: Task', 'description: Task contract', 'body:', ...fields.flatMap(([id, required]) => [
+      '  - type: textarea', `    id: ${id}`, '    attributes:', `      label: ${id}`,
+      ...(required ? ['    validations:', '      required: true'] : []),
+    ]), ''].join('\n'),
   );
 }
 
@@ -50,6 +68,8 @@ test('help exits successfully', () => {
   assert.equal(result.status, 0);
   assert.match(result.stdout, /validate-distribution/);
   assert.match(result.stdout, /install-global/);
+  assert.match(result.stdout, /agents, commands, tools, and skills/);
+  assert.doesNotMatch(result.stdout, /create-approved-issue/);
   assert.equal(result.stderr, '');
 });
 

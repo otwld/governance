@@ -1,14 +1,17 @@
 # OTWLD Governance
 
-OTWLD Governance is a small OpenCode distribution for taking a bounded GitHub
-issue from implementation through independent review, verification, pull request,
-CI, and squash merge. It provides explicit agent roles, commands, reusable skills,
-repository templates, and dependency-free validators. V1 favors safe, observable,
-sequential work over autonomous breadth.
+OTWLD Governance is a small OpenCode distribution for shaping brainstorming into
+one implementation-ready GitHub issue, then taking a bounded issue through
+independent review, verification, pull request, CI, and squash merge. It provides
+explicit agent roles, commands, reusable skills, repository templates, and
+dependency-free validators. V1 favors safe, observable, sequential work over
+autonomous breadth.
 
 ## V1 principles
 
 - One clearly scoped task is the unit of work.
+- Issue publication follows repository inspection, duplicate detection, a readiness
+  gate, and explicit approval of the exact draft.
 - Repository instructions, acceptance criteria, and executed checks are evidence;
   guesses are blockers.
 - Implementation, review, and orchestration have separate roles and permissions.
@@ -20,17 +23,22 @@ sequential work over autonomous breadth.
 
 ## Architecture
 
-- `agents/` defines the orchestrator, implementer, reviewer, and researcher roles.
-- `commands/` exposes the single-task, backlog, review, and setup entry points.
+- `agents/` defines the task-shaper, orchestrator, implementer, reviewer, and
+  researcher roles.
+- `commands/` exposes the shaping, single-task, backlog, review, and setup entry
+  points.
 - `skills/` contains bounded procedures loaded only when their conditions match.
 - `templates/` contains repository guidance and GitHub contribution templates.
 - `schemas/project.schema.json` defines the V1 project configuration.
-- `bin/` and `lib/` provide the `governance` CLI and validators.
+- `tools/` provides the structured issue-publication tool; `bin/` and `lib/`
+  provide the `governance` CLI and validators.
 
-The primary orchestrator coordinates state and GitHub operations but cannot edit
-source. The implementer can edit and test but cannot commit, push, use GitHub, or
-delegate. The reviewer and researcher are read-only. See [Design](docs/design.md)
-for the complete lifecycle and source-of-truth rules.
+The non-default primary task-shaper is read-only except for creating one explicitly
+approved plain issue. The default primary orchestrator coordinates implementation
+state and GitHub operations but cannot edit source. The implementer can edit and
+test but cannot commit, push, use GitHub, or delegate. The reviewer and researcher
+are read-only. See [Design](docs/design.md) for the complete lifecycle,
+source-of-truth rules, and handoff contract.
 
 ## Single-task and backlog modes
 
@@ -58,14 +66,17 @@ governance install-global
 governance install-global --apply
 ```
 
-`install-global` is a dry run unless `--apply` is present. It plans agents and
-commands under `~/.config/opencode` and skills under `/workspace/skills/skills` by
+`install-global` is a dry run unless `--apply` is present. It plans agents, commands,
+and tools under `~/.config/opencode` and skills under `/workspace/skills/skills` by
 default; use `--config-home` and `--skills-home` to select other installation
 locations. Review the plan and apply only when every target is correct. A differing
 destination is a conflict, and apply writes nothing while any conflict remains.
 Merge the relevant values from `templates/opencode.json` into the active
 `opencode.json`; the installer deliberately does not overwrite that file. Keep the
-configured skill path aligned with `--skills-home`.
+configured skill path aligned with `--skills-home`, including the global
+`create_issue: deny` permission. Agent permissions take precedence over that global
+rule: the task-shaper's explicit allow is the sole production override, and every
+other production agent explicitly denies the tool.
 Restart OpenCode after an apply. See [Operations](docs/operations.md) for upgrades
 and recovery.
 
@@ -129,14 +140,18 @@ CLI commands:
 - `governance install-global`: preview global distribution changes without writing.
 - `governance install-global --apply`: apply the reviewed global distribution
   changes when no destination conflicts exist.
-- `governance validate-distribution [root]`: validate agent, command, and skill
-  frontmatter in a distribution checkout.
+- `governance validate-distribution [root]`: validate production agent, command, and
+  tool composition, skill frontmatter, and the implementation issue contract in a
+  distribution checkout.
 - `governance validate-project [repo]`: validate project configuration and every
   referenced guidance document.
 - `governance help`: show CLI usage.
 
 OpenCode commands:
 
+- `/shape-task <brainstorm>`: inspect the repository and existing issues, narrow to
+  one ready task, show the exact issue draft, and publish once only after explicit
+  approval.
 - `/orchestrate <task>`: run one explicit task through the complete lifecycle.
 - `/orchestrate-loop <project context>`: process a verified Project backlog
   sequentially.
@@ -178,9 +193,23 @@ run is not evidence of success.
 
 ## Security boundaries
 
-- All agents use a no-prompt top-level permission default. The orchestrator and
-  implementer allow unknown shell commands; reviewer and researcher retain a
-  read-only shell allowlist that denies unknown commands immediately.
+- All agents use a no-prompt top-level permission default. The task-shaper is the
+  explicit deny-default exception: only named discovery, bounded researcher
+  delegation, questions, task tracking, constrained discovery shell tools, and the
+  structured `create_issue` tool are enabled, so unspecified plugin and MCP tools
+  deny immediately. The other production agents retain their explicit allow default.
+  The global configuration denies `create_issue`; because agent permissions override
+  global permissions, every non-shaper production agent repeats that denial and the
+  task-shaper is the sole agent with an explicit allow.
+  The orchestrator and implementer allow unknown shell commands; reviewer and
+  researcher use a read-only shell allowlist.
+- The task-shaper may delegate only bounded research and may create only one plain
+  issue after approval. The custom tool invokes `gh` with a structured argument
+  vector and no shell, so free-form Markdown is transferred unchanged and cannot be
+  evaluated as shell syntax. Direct `gh issue create` remains denied. The task-shaper
+  cannot edit files or Git state, mutate existing issues, labels, assignments,
+  milestones, Projects, pull requests, or repository settings, or delegate
+  implementation and review.
 - Only the orchestrator may perform the specifically allowed branch, commit, push,
   Project, pull request, and squash-merge operations.
 - Implementers cannot use `gh`, commit, push, switch branches, delegate, deploy, or
@@ -188,10 +217,12 @@ run is not evidence of success.
 - Reviewers are independent and read-only. Researchers are bounded and read-only.
 - Force pushes, administrative merges, branch deletion, destructive Git, and
   deployment operations are outside the V1 workflow.
-- Least-privilege GitHub credentials and protected default branches remain required;
-  agent permissions do not replace repository controls.
-- Installation changes global OpenCode configuration. Always inspect dry-run output
-  and install only from a trusted checkout.
+- Least-privilege GitHub credentials, including issue write only where task shaping
+  is used, and protected default branches remain required; agent permissions do not
+  replace repository controls.
+- Installation changes global OpenCode configuration, including custom tools that
+  load only when OpenCode starts. Always inspect dry-run output, install only from a
+  trusted checkout, and restart OpenCode after apply.
 
 ## Documentation
 

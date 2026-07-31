@@ -45,7 +45,8 @@ Grant only the permissions required by the installed workflow and repository:
 
 - repository metadata: read;
 - contents: read and write for branches, commits, and pushes;
-- issues: read for task context and state visibility;
+- issues: read for task context, duplicate detection, and state visibility; add
+  write only when `/shape-task` will publish approved issues;
 - pull requests: read and write;
 - checks/actions: read to observe required CI;
 - the selected organization or user Project: read and write for item status.
@@ -55,6 +56,20 @@ and, for organization-owned Projects, the minimum organization read access neede
 the account. For a fine-grained token or GitHub App, grant the equivalent permissions
 only to the pilot repository and selected Project. Verify actual access with the
 read-only setup audit before use.
+
+The issue-write permission expands the trust boundary. The task-shaper compensates
+with a top-level deny default for unspecified tools, explicit read/discovery tools,
+and denial of every other repository and GitHub mutation. It shows the exact
+repository, title, and body, requires explicit approval, and allows one structured
+`create_issue` call. The custom tool passes those three values directly to `gh` as an
+argument vector without a shell, so multiline Markdown and literal metacharacters,
+shell expressions, and option-like text remain data. Direct shell issue creation is
+denied. Use a separate credential or invocation context when operational policy
+requires the orchestrator and task-shaper to have different token scopes.
+The active `opencode.json` must also carry the template's global
+`create_issue: deny` permission. Agent rules take precedence over global rules, so
+the task-shaper explicitly overrides it to allow while orchestrator, implementer,
+reviewer, and researcher explicitly deny the tool.
 
 Do not grant administration, branch-protection bypass, workflow modification,
 secret-management, deployment, package deletion, or force-push capability. Store
@@ -89,7 +104,8 @@ independent review.
    Replace template placeholders only with commands and context verified in the
    repository.
 3. Add the agent-task issue form and pull request template when they fit existing
-   contribution policy. Preserve automation-sensitive local fields.
+   contribution policy. Merge the issue semantics into local forms while preserving
+   automation-sensitive IDs and metadata.
 4. Create `.opencode/project.json` with `version: 1`, verified commands, purposeful
    existing guidance paths, and squash merge policy. Add the optional Project
    mapping for backlog mode. Add `$schema` only if it resolves.
@@ -103,6 +119,31 @@ independent review.
 
 7. Run one supervised single task before enabling backlog mode.
 
+## Shaping a task
+
+Invoke `/shape-task` with brainstorming, not a prewritten four-field form:
+
+```text
+/shape-task <brainstorm for one possible outcome>
+```
+
+The task-shaper inspects repository guidance, configuration, docs, source, tests,
+CI, history, and open and closed issues before publication. It narrows the input to
+one independently deliverable outcome, resolves material ambiguity with bounded
+questions, and stops on a duplicate or unresolved high-impact decision. Its
+readiness contract covers outcome, problem evidence, requirements, included scope,
+conditional non-goals, binding technical direction and implementer discretion,
+evidence-backed touchpoints, Given/When/Then scenarios including negative or
+regression behavior, task-specific and repository checks, dependencies and
+readiness, low-impact assumptions, and authoritative references. Conditional
+sections are omitted instead of filled with `N/A`.
+
+Review the displayed repository, title, and complete body. Only an explicit approval
+of that exact draft authorizes creation. Any revision requires a new complete display
+and approval. Publication uses the structured `create_issue` custom tool, not a shell
+command. An ambiguous create result is a blocker; verify GitHub state rather than
+retrying and risking a duplicate.
+
 ## Using single-task mode
 
 Invoke `/orchestrate` with one self-contained task or issue reference:
@@ -114,6 +155,13 @@ Invoke `/orchestrate` with one self-contained task or issue reference:
 The workflow handles only that task and stops after merge or blocker. It does not
 select another Project item. Use single mode for pilots, urgent bounded work, or any
 repository whose Project ordering is not fully configured.
+
+When given an issue reference, the orchestrator fetches and copies the complete
+issue contents into every implementation and review handoff. It adds current
+repository root, branch/base/publication state, exact diff or working-tree boundary,
+unrelated changes, workflow stage and cycle, review and CI evidence, exact configured
+verification and authorized installation state, and publication prohibitions. A
+bare issue URL is never passed to an implementer or reviewer.
 
 When `merge.automatic` is false, single mode stops at a green reviewed PR ready for
 human merge rather than treating that policy as a blocker.
@@ -166,11 +214,22 @@ decision needed. Resume from verified state rather than rerunning setup blindly.
 
 ## Updating the global installation
 
-Use a trusted release or reviewed checkout. Before changing the global OpenCode
-configuration, validate the source distribution and preview the installation:
+Use a trusted release or reviewed checkout. The already-installed CLI may come from
+an older package and therefore cannot distribute newly added agents or custom tools.
+First change to the root of the reviewed checkout that contains this repository's
+`package.json`, validate it, and refresh the global CLI from that local package using
+the installation method supported by the package metadata and README:
 
 ```sh
 npm run check
+npm install --global .
+governance help
+```
+
+Confirm that help describes installation of agents, commands, tools, and skills.
+Then preview the global OpenCode configuration update with the refreshed CLI:
+
+```sh
 governance install-global
 ```
 
@@ -183,12 +242,17 @@ a fresh dry run. If the conflict-free plan is expected, apply it:
 governance install-global --apply
 ```
 
-The installer does not change `opencode.json`. Merge the required values from
+The installer copies `tools/*.js` to the selected OpenCode config home's `tools`
+directory in addition to agents and commands. It does not change `opencode.json`.
+Merge the required values from
 `templates/opencode.json` manually, preserve existing providers and MCP servers, and
-keep the configured skill path aligned with the installation target.
+keep the configured skill path aligned with the installation target. Preserve the
+global `create_issue: deny`; the installed task-shaper is the sole production agent
+whose agent-level rule overrides it to allow.
 
 Close or stop active OpenCode sessions before replacing the distribution. After
-apply, restart OpenCode so it reloads agents, commands, skills, and permissions.
+apply, restart OpenCode so it reloads agents, commands, custom tools, skills, and
+permissions. The `create_issue` filename exposes that tool name only after restart.
 Run `/setup-project` again when an update changes Project expectations or repository
 configuration. If apply is interrupted or reports a conflict, do not repeatedly
 apply; preserve the output, run a fresh dry-run, and reconcile the target first.

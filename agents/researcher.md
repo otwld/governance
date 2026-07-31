@@ -7,6 +7,7 @@ color: info
 steps: 30
 permission:
   "*": allow
+  create_issue: deny
   read:
     "*": allow
     "*.env": deny
@@ -25,7 +26,8 @@ permission:
     "git show*": allow
     "git rev-parse*": allow
     "git ls-files*": allow
-    "git remote -v*": allow
+    "git remote*": deny
+    "git remote -v": allow
     "gh repo view*": allow
     "gh issue list*": allow
     "gh issue view*": allow

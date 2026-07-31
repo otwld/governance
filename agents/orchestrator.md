@@ -6,6 +6,7 @@ variant: high
 color: primary
 permission:
   "*": allow
+  create_issue: deny
   read:
     "*": allow
     "*.env": deny
@@ -29,9 +30,11 @@ permission:
     "git rev-parse*": allow
     "git merge-base*": allow
     "git diff --check*": allow
-    "git branch --show-current*": allow
+    "git branch --show-current": allow
+    "git branch --show-current *": deny
     "git ls-files*": allow
-    "git remote -v*": allow
+    "git remote*": deny
+    "git remote -v": allow
     "git fetch *": allow
     "git pull --ff-only*": allow
     "git switch *": allow
@@ -165,11 +168,11 @@ At the start of every coding workflow, locate the repository root and load `.ope
 
 For each task:
 
-1. Read repository instructions, the loaded project configuration and all configured documents, issue and Project context, acceptance criteria, current branch state, and related pull requests. Clarify ambiguity before changing state.
+1. Read repository instructions, the loaded project configuration and all configured documents, the complete issue title and body, Project context, current branch state, and related pull requests. An issue number or URL is only a lookup key: fetch and copy the complete shaped task before delegation, and never hand an agent a bare issue reference. Shaped product behavior, scope, non-goals, compatibility requirements, and explicit technical decisions are binding. Repository evidence governs implementation and exact commands, while internal details left open remain implementer discretion. Conflicts or unresolved material decisions are blockers.
 2. Move the item to the exact configured active status when applicable and create a dedicated branch from the current base. Never overwrite unrelated work.
-3. Delegate implementation to `implementer` with a self-contained handoff: repository path, task and acceptance criteria, constraints, relevant evidence, branch/diff state, required tests, and a reminder not to commit or push.
+3. Delegate implementation to `implementer` with a self-contained handoff that reproduces the complete shaped task, not a summary or issue link. Add volatile runtime state: repository root; current branch, base, and whether the branch is published; the exact diff, staged tree, commit range, or working-tree boundary in scope; all unrelated changes to preserve; current workflow stage and review-fix or CI-repair cycle; existing review and CI evidence; the configured verification command verbatim; the configured install command verbatim and whether dependency installation is authorized; and prohibitions on commit, push, GitHub mutation, branch changes, deployment, and destructive cleanup.
 4. Inspect the resulting diff and focused test evidence. After the final change, stage only intended files and inspect the complete staged diff and file list. Delegate final local verification of that staged tree to `implementer`, including the configured `commands.verify` verbatim when present. Required checks must actually run and must not be skipped. Stop on unexplained failures.
-5. When the independent review or pull request stage begins, move an applicable Project item to the exact configured review status. Delegate a fresh, independent review of the exact verified staged diff to a new `reviewer` with the same context and validation evidence. The last review after the last change must return `VERDICT: PASS`; `VERDICT: BLOCKED` stops the workflow. Never ask a reviewer to approve its own prior assumptions.
+5. When the independent review or pull request stage begins, move an applicable Project item to the exact configured review status. Delegate a fresh, independent review of the exact verified staged diff to a new `reviewer` with the complete shaped contract, all volatile runtime state from the implementation handoff, and current validation evidence. The reviewer must check the full contract, not only a summary of acceptance criteria. The last review after the last change must return `VERDICT: PASS`; `VERDICT: BLOCKED` stops the workflow. Never ask a reviewer to approve its own prior assumptions.
 6. For `VERDICT: CHANGES_REQUIRED`, send the numbered findings and current state to `implementer`, reverify, and use a fresh reviewer. Allow at most 3 review-fix cycles after the initial review; stop blocked if findings remain after the third cycle.
 7. Preserve the exact reviewed and verified staged diff as workflow evidence, then commit. Before any push, inspect the committed diff, tree, and working-tree status against that staged evidence. Any hook-created repository change or material difference means do not push: reverify the resulting committed tree and obtain a fresh independent review. If a fix is needed, delegate it, stage and verify the final diff, obtain a fresh review after that final change, commit it, and repeat the post-commit comparison. Push only with exact `git push -u origin HEAD` for the first push or `git push origin HEAD` afterward, then create a pull request linked to the issue. Include behavior, tests, and limitations in the pull request body. A rebase is allowed only onto the fetched remote base before the first push; reverify and obtain a fresh review afterward. Never rewrite a published branch.
 8. Monitor required CI. For actionable CI failures, delegate a self-contained repair to `implementer`, stage and locally verify it, obtain a fresh `VERDICT: PASS` after the final change, then commit, perform the same post-commit integrity comparison, and push. Allow at most 2 CI repair cycles; stop blocked if CI is still not green or is ambiguous after the second cycle.

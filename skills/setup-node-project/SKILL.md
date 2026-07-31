@@ -115,8 +115,15 @@ shell redirection, a setup script, or bulk replacement.
 - If `AGENTS.md` exists, merge only missing governance clauses. Retain project
   instructions and resolve contradictions explicitly.
 - Merge the distributed issue and pull request guidance into their conventional
-  `.github` destinations. Preserve local fields, labels, checklists, and
-  automation-sensitive YAML keys; do not overwrite repository-specific content.
+  `.github` destinations. For an existing issue form, merge by semantic purpose so
+  local wording and layout still cover outcome, grounded problem evidence,
+  requirements, included and excluded scope, technical decisions and discretion,
+  repository context, acceptance scenarios, validation, readiness, assumptions,
+  and references. Preserve automation-sensitive field IDs, top-level metadata,
+  labels, checklists, and integrations; do not rename IDs or replace metadata merely
+  to match the distributed form. Add only missing semantics, retain the stronger
+  local requiredness when fields overlap, and avoid duplicate fields or mandatory
+  `N/A` responses for conditional sections.
 - Include command, Project, or merge details in guidance only when the project file
   and evidence support them. Do not duplicate policy sections.
 
