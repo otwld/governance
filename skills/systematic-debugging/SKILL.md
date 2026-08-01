@@ -78,7 +78,9 @@ it instead of laundering uncertainty into confidence.
 
 Create the smallest behavior-level regression test that fails for the established
 reason. Watch it fail. Make one scoped fix at the source, not a bundle of cleanup.
-Run the tight reproduction, regression, nearby checks, and then `verify-change`.
+Run the tight reproduction, regression, nearby checks, and the repository's required
+final check. During governed issue delivery, hand the final staged boundary to
+`verify-change`; ordinary fixes do not require that durable contract workflow.
 After the source fix, add proportionate [defense in depth](references/defense-in-depth.md)
 only at boundaries where it produces clearer errors or prevents dangerous effects.
 

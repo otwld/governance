@@ -13,7 +13,7 @@ OpenCode Governance is an issue factory and sequential delivery workflow for Ope
 
 The primary roster is brainstormer, task-shaper, and orchestrator. Planner, implementer, reviewer, and researcher are specialized subagents. Agents have broad development access so they can inspect repositories, use authenticated GitHub commands, diagnose OpenCode, edit, and run checks without searching for permission workarounds. Prompts preserve role intent, while explicit custom-tool permissions retain ownership of issue publication and durable workflow state.
 
-Commands stay thin and route to specialized skills: brainstorming, shaping, planning, delivery, systematic debugging, test and documentation updates, independent issue/plan/change review, setup, research, and verification. The canonical detailed lifecycle is [deliver-issue](skills/deliver-issue/references/lifecycle.md). See [Design](docs/design.md), [Contracts](docs/contracts.md), [Operations](docs/operations.md), and [Skill authoring](docs/skill-authoring.md).
+Commands stay thin and route to specialized skills: brainstorming, shaping, planning, delivery, systematic debugging, test and documentation updates, independent issue/plan/change review, setup, research, and verification. The canonical detailed lifecycle is [deliver-issue](skills/deliver-issue/references/lifecycle.md). See [Design](docs/design.md), [Contracts](docs/contracts.md), [Operations](docs/operations.md), [Agent model routing](docs/models.md), and [Skill authoring](docs/skill-authoring.md).
 
 ## Install
 

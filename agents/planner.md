@@ -1,6 +1,8 @@
 ---
 description: Produces evidence-backed implementation plans.
 mode: subagent
+model: openai/gpt-5.6-terra
+reasoningEffort: high
 permission:
   "*": allow
   external_directory: allow

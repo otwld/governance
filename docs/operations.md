@@ -2,11 +2,17 @@
 
 ## Prerequisites
 
-- Node.js 20 or later, Git, OpenCode, and authenticated GitHub CLI.
+- Node.js 20 or later, Git, OpenCode, authenticated GitHub CLI, and an authenticated
+  OpenAI provider exposing `gpt-5.6-luna`, `gpt-5.6-terra`, and `gpt-5.6-sol`.
 - Protected default branch with required checks and squash merge enabled.
 - For Project runs, one unambiguous Status field, a configured Priority field, and no concurrent runner. Single-issue delivery does not require Priority.
 
 Authenticate GitHub CLI non-interactively with a least-privilege credential whose repository and Project owner match `.opencode/project.json`. Verify `gh auth status`, repository identity, Project access, branch protection, required checks, and squash settings before a mutation. Never print, read, copy, or store tokens in repository files or workflow artifacts.
+
+Run `opencode models openai` before installation or after a provider change. Every
+distributed agent pins its audited model and reasoning effort; unavailable model IDs
+are configuration failures, not permission or prompt failures. Follow the escalation
+rules in [Agent model routing](models.md) rather than raising effort for every task.
 
 GitHub access has separate credential channels. `gh` commands use GitHub CLI
 authentication such as `GH_TOKEN`/`GITHUB_TOKEN` or the CLI credential store.

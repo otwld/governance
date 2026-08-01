@@ -1,6 +1,8 @@
 ---
 description: Independently reviews issues, plans, and implementation changes.
 mode: subagent
+model: openai/gpt-5.6-sol
+reasoningEffort: medium
 permission:
   "*": allow
   external_directory: allow

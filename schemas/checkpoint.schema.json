@@ -11,6 +11,13 @@
     "planDigest": { "$ref": "#/$defs/digest" }, "changeDigest": { "$ref": "#/$defs/digest" }, "verificationDigest": { "$ref": "#/$defs/digest" }, "planReviewDigest": { "$ref": "#/$defs/digest" }, "changeReviewDigest": { "$ref": "#/$defs/digest" }, "blockerDigest": { "$ref": "#/$defs/digest" },
     "projectItemId": { "$ref": "#/$defs/nonempty" }, "baseCommit": { "$ref": "#/$defs/oid" }, "branch": { "$ref": "#/$defs/nonempty" }, "headCommit": { "$ref": "#/$defs/oid" }, "pullRequestUrl": { "$ref": "#/$defs/nonempty" }
   },
+  "allOf": [
+    { "if": { "properties": { "stage": { "const": "planned" } } }, "then": { "required": ["planDigest"] } },
+    { "if": { "properties": { "stage": { "enum": ["plan_reviewed", "implementing"] } } }, "then": { "required": ["planDigest", "planReviewDigest"] } },
+    { "if": { "properties": { "stage": { "const": "verified" } } }, "then": { "required": ["planDigest", "planReviewDigest", "changeDigest", "verificationDigest"] } },
+    { "if": { "properties": { "stage": { "enum": ["change_reviewed", "committed", "pushed", "pr_open", "ci_green", "merged", "done"] } } }, "then": { "required": ["planDigest", "planReviewDigest", "changeDigest", "verificationDigest", "changeReviewDigest"] } },
+    { "if": { "properties": { "stage": { "const": "blocked" } } }, "then": { "required": ["blockerDigest"] } }
+  ],
   "$defs": {
     "nonempty": { "type": "string", "minLength": 1, "pattern": "\\S" },
     "digest": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },

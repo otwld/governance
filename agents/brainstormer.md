@@ -1,6 +1,8 @@
 ---
 description: Explores product directions and investigates the surrounding context.
 mode: primary
+model: openai/gpt-5.6-terra
+reasoningEffort: medium
 permission:
   "*": allow
   external_directory: allow

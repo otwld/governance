@@ -1,8 +1,11 @@
 ---
-description: Runs a fresh read-only review of an exact issue, plan, or change subject.
+description: Runs a fresh independent review of an issue, plan, change, or working tree.
 agent: reviewer
 ---
 
 Independently review this exact subject: $ARGUMENTS
 
-Route issues to `review-issue`, plans to `review-plan`, and changes to `review-change`. A change review requires and consumes its bound verification evidence; verification is not a standalone review subject. Require the complete artifact, digest, and diff or head boundary. If the subject kind or boundary is ambiguous, return `BLOCKED` without guessing.
+Use `review-issue`, `review-plan`, or `review-change` when the matching governed
+contracts and digests are supplied. Otherwise review the user-specified diff, commit
+range, pull request, or current working tree directly. Do not block a reviewable
+subject merely because durable workflow artifacts are absent.

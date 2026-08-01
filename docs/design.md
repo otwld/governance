@@ -6,8 +6,9 @@ GitHub issues, trusted-author artifact comments, Projects, pull requests, checks
 
 Issue, plan, review, and verification contracts are structured, validated, and canonically digested. A digest binds approval and review to exact content. Publication requires a matching issue `PASS` review. Delivery creates and independently reviews the plan, then requires fresh review after the final change.
 
-Workflow publication is compare-before-write: current head must still equal the
-checkpoint binding. A changed head invalidates downstream change, verification,
+Workflow publication compares the durable artifact-chain head before writing. The
+orchestrator separately reconciles the Git head with the checkpoint before calling
+the publisher. A changed Git head invalidates downstream change, verification,
 change-review, and checkpoint state. Checkpoints preserve `planReviewDigest` and
 `changeReviewDigest` independently.
 
@@ -25,6 +26,16 @@ globs. Explicit ownership remains only for custom tools that publish durable wor
 state: task-shaper receives `issue_factory`; orchestrator receives `workflow_state`
 and `change_boundary`; orchestrator and implementer receive `dependency_update`; and
 all roles may use read-only `governance_check`.
+
+## Model routing
+
+Each agent pins an explicit GPT-5.6 tier and reasoning effort so subagents do not
+inherit an accidentally expensive or underpowered primary model. Luna handles bounded
+high-volume research, Terra handles the balanced exploration, shaping, planning, and
+implementation workloads, and Sol is reserved for orchestration and independent
+review where failure impact justifies its cost. Assignments, escalation rules,
+evidence, local probes, and known client limits are maintained in
+[Agent model routing](models.md).
 
 ## Semantic documentation
 

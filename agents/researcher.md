@@ -1,6 +1,8 @@
 ---
 description: Performs bounded cited research with full read and diagnostic access.
 mode: subagent
+model: openai/gpt-5.6-luna
+reasoningEffort: medium
 permission:
   "*": allow
   external_directory: allow

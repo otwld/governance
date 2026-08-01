@@ -1,12 +1,12 @@
 {
   "agents": {
-    "brainstormer": { "mode": "primary" },
-    "task-shaper": { "mode": "primary" },
-    "orchestrator": { "mode": "primary", "default": true },
-    "planner": { "mode": "subagent" },
-    "implementer": { "mode": "subagent" },
-    "reviewer": { "mode": "subagent" },
-    "researcher": { "mode": "subagent" }
+    "brainstormer": { "mode": "primary", "model": "openai/gpt-5.6-terra", "reasoningEffort": "medium" },
+    "task-shaper": { "mode": "primary", "model": "openai/gpt-5.6-terra", "reasoningEffort": "medium" },
+    "orchestrator": { "mode": "primary", "default": true, "model": "openai/gpt-5.6-sol", "reasoningEffort": "medium" },
+    "planner": { "mode": "subagent", "model": "openai/gpt-5.6-terra", "reasoningEffort": "high" },
+    "implementer": { "mode": "subagent", "model": "openai/gpt-5.6-terra", "reasoningEffort": "medium" },
+    "reviewer": { "mode": "subagent", "model": "openai/gpt-5.6-sol", "reasoningEffort": "medium" },
+    "researcher": { "mode": "subagent", "model": "openai/gpt-5.6-luna", "reasoningEffort": "medium" }
   },
   "commands": {
     "brainstorm": "brainstormer",

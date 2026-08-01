@@ -1,6 +1,8 @@
 ---
 description: Default coordinator with full development and delivery access.
 mode: primary
+model: openai/gpt-5.6-sol
+reasoningEffort: medium
 permission:
   "*": allow
   external_directory: allow

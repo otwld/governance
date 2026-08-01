@@ -64,7 +64,9 @@ risk; still add regression coverage at the nearest meaningful seam when possible
 
 Return scenario-to-test mapping, red command and expected failure evidence, green
 command and execution count, production paths changed, mocks and justification,
-exceptions, and the next verification handoff. Run `verify-change` after all slices.
+exceptions, and the next verification step. Run applicable repository checks after
+all slices. During governed issue delivery, hand the final staged boundary to
+`verify-change`; ordinary changes do not require that durable contract workflow.
 
 ## Anti-patterns
 

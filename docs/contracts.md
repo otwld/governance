@@ -4,7 +4,7 @@ The closed JSON Schemas in `schemas/` define project, issue, plan, review, and v
 
 ## Durable artifact markers
 
-The approved issue contract and matching issue review are preserved together in one machine-recognizable issue comment authored by a project `trustedActors` identity. Later plan, review, verification, and workflow artifacts use the same trusted-author comment model. Markers are identifiers, not authority: consumers fetch the complete comment, verify its author, recompute its digest, and reject missing, duplicate, malformed, untrusted, or conflicting successors. Public wrappers require the supplied OpenCode `context.directory` and discover repository, trusted actors, and optional Project mapping from validated `.opencode/project.json` only within that bounded Git worktree; they never fall back to process cwd or accept caller-selected authority. `governance_check` performs read-only contract, binding, provenance, and queue checks. The `workflow_state` inspect action reads durable comments without publishing; only the orchestrator may publish workflow records. Publication rechecks the current head against the bound checkpoint. Any head or material content change invalidates dependent change, verification, review, and workflow evidence before a successor may be published.
+The approved issue contract and matching issue review are preserved together in one machine-recognizable issue comment authored by a project `trustedActors` identity. Later plan, review, verification, and workflow artifacts use the same trusted-author comment model. Markers are identifiers, not authority: consumers fetch the complete comment, verify its author, recompute its digest, and reject missing, duplicate, malformed, untrusted, or conflicting successors. Public wrappers require the supplied OpenCode `context.directory` and discover repository, trusted actors, and optional Project mapping from validated `.opencode/project.json` only within that bounded Git worktree; they never fall back to process cwd or accept caller-selected authority. `governance_check` performs read-only contract, binding, provenance, and queue checks. The `workflow_state` inspect action reads durable comments without publishing; only the orchestrator may publish workflow records. Publication rechecks the current artifact-chain head. Git head and material-content reconciliation remains an orchestrator preflight; a change invalidates dependent change, verification, review, and checkpoint evidence before a successor may be published.
 
 ## Issue
 
@@ -24,11 +24,12 @@ Verification binds issue, plan, and change digests; delivery evidence binds that
 
 ## Checkpoint
 
-A checkpoint binds lifecycle stage and current head to the issue and, when present,
-plan, change, verification, blocker, and review evidence. `planReviewDigest` and
-`changeReviewDigest` are separate fields; a generic review digest cannot substitute
-for either stage. Publishing a successor requires current-head preflight, and a head
-change invalidates every checkpoint field derived from the former change.
+A checkpoint binds lifecycle stage and current head to the issue and the evidence
+required by that stage. `planReviewDigest` and `changeReviewDigest` are separate
+fields; a generic review digest cannot substitute for either stage. The orchestrator
+reconciles the Git head before publication, while `workflow_state` enforces the
+artifact-chain predecessor. A Git head change invalidates every checkpoint field
+derived from the former change.
 
 ## Issue factory
 
