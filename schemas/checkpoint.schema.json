@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Workflow checkpoint",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["issueDigest", "mode", "stage", "repository", "issueUrl", "rounds"],
+  "properties": {
+    "issueDigest": { "$ref": "#/$defs/digest" }, "mode": { "enum": ["issue", "project"] }, "stage": { "enum": ["selected", "active", "planned", "plan_reviewed", "implementing", "verified", "change_reviewed", "committed", "pushed", "pr_open", "ci_green", "merged", "done", "blocked"] },
+    "repository": { "type": "string", "pattern": "^[^/\\s]+/[^/\\s]+$" }, "issueUrl": { "$ref": "#/$defs/nonempty" },
+    "rounds": { "type": "object", "additionalProperties": false, "required": ["plan", "change", "ci"], "properties": { "plan": { "$ref": "#/$defs/round" }, "change": { "$ref": "#/$defs/round" }, "ci": { "$ref": "#/$defs/round" } } },
+    "planDigest": { "$ref": "#/$defs/digest" }, "changeDigest": { "$ref": "#/$defs/digest" }, "verificationDigest": { "$ref": "#/$defs/digest" }, "planReviewDigest": { "$ref": "#/$defs/digest" }, "changeReviewDigest": { "$ref": "#/$defs/digest" }, "blockerDigest": { "$ref": "#/$defs/digest" },
+    "projectItemId": { "$ref": "#/$defs/nonempty" }, "baseCommit": { "$ref": "#/$defs/oid" }, "branch": { "$ref": "#/$defs/nonempty" }, "headCommit": { "$ref": "#/$defs/oid" }, "pullRequestUrl": { "$ref": "#/$defs/nonempty" }
+  },
+  "allOf": [
+    { "if": { "properties": { "stage": { "const": "planned" } } }, "then": { "required": ["planDigest"] } },
+    { "if": { "properties": { "stage": { "enum": ["plan_reviewed", "implementing"] } } }, "then": { "required": ["planDigest", "planReviewDigest"] } },
+    { "if": { "properties": { "stage": { "const": "verified" } } }, "then": { "required": ["planDigest", "planReviewDigest", "changeDigest", "verificationDigest"] } },
+    { "if": { "properties": { "stage": { "enum": ["change_reviewed", "committed", "pushed", "pr_open", "ci_green", "merged", "done"] } } }, "then": { "required": ["planDigest", "planReviewDigest", "changeDigest", "verificationDigest", "changeReviewDigest"] } },
+    { "if": { "properties": { "stage": { "const": "blocked" } } }, "then": { "required": ["blockerDigest"] } }
+  ],
+  "$defs": {
+    "nonempty": { "type": "string", "minLength": 1, "pattern": "\\S" },
+    "digest": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
+    "oid": { "type": "string", "pattern": "^(?:[a-f0-9]{40}|[a-f0-9]{64})$" },
+    "round": { "type": "integer", "minimum": 0 }
+  }
+}

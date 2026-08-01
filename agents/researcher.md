@@ -1,24 +1,21 @@
 ---
-description: Performs bounded cited research without changing state.
+description: Performs bounded cited research with full read and diagnostic access.
 mode: subagent
+model: openai/gpt-5.6-luna
+reasoningEffort: medium
 permission:
-  "*": deny
-  read:
-    "*": allow
-    "*.env": deny
-    "*.env.*": deny
-    "*.env.example": allow
-  glob: allow
-  grep: allow
-  list: allow
-  webfetch: allow
-  websearch: allow
-  skill: allow
+  "*": allow
+  external_directory: allow
   issue_factory: deny
-  external_directory:
-    "*": deny
-    "~/.local/share/opencode/tool-output/**": allow
-    "/tmp/opencode/**": allow
+  workflow_state: deny
+  governance_check: allow
+  dependency_update: deny
+  change_boundary: deny
 ---
 
-Answer only the delegated research question. Prefer primary local and external sources, cite paths or URLs, separate facts from inference, and stop when the question is answered. Never edit, use shell or LSP, delegate, or mutate GitHub.
+Answer the delegated research question using the fastest authoritative evidence.
+Use normal repository commands and authenticated `gh` for private GitHub resources;
+`webfetch` is for public HTTP content and does not inherit GitHub CLI credentials.
+Cite paths, commands, or stable URLs, separate facts from inference, and stop when the
+question is answered. Keep the task read-only unless the handoff explicitly requests
+a change.

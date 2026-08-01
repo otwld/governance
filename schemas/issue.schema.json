@@ -3,7 +3,7 @@
   "title": "Approved issue",
   "type": "object",
   "additionalProperties": false,
-  "required": ["repository", "title", "outcome", "problemEvidence", "requirements", "scope", "technicalDirection", "acceptanceScenarios", "validation", "dependencies", "assumptions", "references"],
+  "required": ["repository", "title", "outcome", "problemEvidence", "requirements", "scope", "technicalDirection", "acceptanceScenarios", "validation", "documentation", "dependencies", "assumptions", "references"],
   "properties": {
     "repository": { "type": "string", "pattern": "^[^/\\s]+/[^/\\s]+$" },
     "title": { "$ref": "#/$defs/nonempty" },
@@ -23,13 +23,14 @@
       "items": { "type": "object", "additionalProperties": false, "required": ["id", "given", "when", "then"], "properties": { "id": { "$ref": "#/$defs/id" }, "given": { "$ref": "#/$defs/nonempty" }, "when": { "$ref": "#/$defs/nonempty" }, "then": { "$ref": "#/$defs/nonemptyArray" } } }
     },
     "validation": { "type": "object", "additionalProperties": false, "required": ["focused", "required"], "properties": { "focused": { "$ref": "#/$defs/stringArray" }, "required": { "$ref": "#/$defs/nonemptyArray" } } },
+    "documentation": { "type": "object", "additionalProperties": false, "required": ["declarations", "external", "rationale"], "properties": { "declarations": { "$ref": "#/$defs/stringArray" }, "external": { "$ref": "#/$defs/stringArray" }, "rationale": { "$ref": "#/$defs/nonempty" } } },
     "dependencies": { "$ref": "#/$defs/stringArray" },
     "assumptions": { "$ref": "#/$defs/stringArray" },
     "references": { "$ref": "#/$defs/stringArray" },
     "projectTarget": {
       "type": "object", "additionalProperties": false,
-      "required": ["owner", "number", "projectId", "statusFieldId", "readyOptionId"],
-      "properties": { "owner": { "type": "string", "pattern": "^[A-Za-z0-9-]+$" }, "number": { "type": "integer", "minimum": 1 }, "projectId": { "$ref": "#/$defs/nonempty" }, "statusFieldId": { "$ref": "#/$defs/nonempty" }, "readyOptionId": { "$ref": "#/$defs/nonempty" } }
+      "required": ["owner", "number", "projectId", "statusFieldId", "readyOptionId", "readyStatus"],
+      "properties": { "owner": { "type": "string", "pattern": "^[A-Za-z0-9-]+$" }, "number": { "type": "integer", "minimum": 1 }, "projectId": { "$ref": "#/$defs/nonempty" }, "statusFieldId": { "$ref": "#/$defs/nonempty" }, "readyOptionId": { "$ref": "#/$defs/nonempty" }, "readyStatus": { "$ref": "#/$defs/nonempty" } }
     }
   },
   "$defs": {

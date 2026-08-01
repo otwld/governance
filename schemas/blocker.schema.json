@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Workflow blocker",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["issueDigest", "stage", "reason", "evidence", "requiredAction"],
+  "properties": {
+    "issueDigest": { "$ref": "#/$defs/digest" },
+    "stage": { "$ref": "#/$defs/nonempty" },
+    "reason": { "$ref": "#/$defs/nonempty" },
+    "evidence": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/nonempty" } },
+    "requiredAction": { "$ref": "#/$defs/nonempty" }
+  },
+  "$defs": {
+    "nonempty": { "type": "string", "minLength": 1, "pattern": "\\S" },
+    "digest": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" }
+  }
+}

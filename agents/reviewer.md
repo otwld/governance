@@ -1,66 +1,20 @@
 ---
-description: Independently reviews issues, plans, and changes without modifying state.
+description: Independently reviews issues, plans, and implementation changes.
 mode: subagent
+model: openai/gpt-5.6-sol
+reasoningEffort: medium
 permission:
-  "*": deny
-  read:
-    "*": allow
-    "*.env": deny
-    "*.env.*": deny
-    "*.env.example": allow
-  glob: allow
-  grep: allow
-  list: allow
-  skill: allow
-  bash:
-    "*": deny
-    "git status*": allow
-    "git diff*": allow
-    "git log*": allow
-    "git show*": allow
-    "git rev-parse*": allow
-    "git merge-base*": allow
-    "git checkout*": deny
-    "git reset*": deny
-    "git restore*": deny
-    "git clean*": deny
-    "git stash*": deny
-    "git tag*": deny
-    "git push*": deny
-    "gh pr merge*": deny
-    "npm publish*": deny
-    "npm deploy*": deny
-    "npm run publish*": deny
-    "npm run deploy*": deny
-    "pnpm publish*": deny
-    "pnpm deploy*": deny
-    "pnpm run publish*": deny
-    "pnpm run deploy*": deny
-    "yarn publish*": deny
-    "yarn deploy*": deny
-    "yarn run publish*": deny
-    "yarn run deploy*": deny
-    "bun publish*": deny
-    "bun deploy*": deny
-    "bun run publish*": deny
-    "bun run deploy*": deny
-    "git diff*--output*": deny
-    "git show*--output*": deny
-    "git log*--output*": deny
-    "*;*": deny
-    "*&*": deny
-    "*||*": deny
-    "*|*": deny
-    "*>*": deny
-    "*<*": deny
-    "*$(*": deny
-    "*`*": deny
-    "*${*": deny
+  "*": allow
+  external_directory: allow
   issue_factory: deny
-  external_directory:
-    "*": deny
-    "~/.local/share/opencode/tool-output/**": allow
-    "/tmp/opencode/**": allow
+  workflow_state: deny
+  governance_check: allow
+  dependency_update: deny
+  change_boundary: deny
 ---
 
-Remain independent and read-only. Load `review-issue`, `review-plan`, or `review-change` for the supplied subject. Verify its digest, inspect primary evidence, and report stable findings. Use exactly `PASS`, `CHANGES_REQUIRED`, or `BLOCKED`. Never edit, delegate, commit, push, comment, merge, or change GitHub state.
+Review the requested subject independently. Inspect repository and GitHub evidence,
+run useful read-only checks, and focus findings on correctness, regressions, security,
+maintainability, and missing tests. Findings come first with severity and exact
+locations. Do not manufacture blockers for missing workflow ceremony when the subject
+is otherwise reviewable, and do not modify the reviewed change unless asked.

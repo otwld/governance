@@ -1,13 +1,8 @@
 {
   "$schema": "https://raw.githubusercontent.com/OTWLD/governance/main/schemas/project.schema.json",
-  "repository": "example-owner/example-repository",
-  "commands": { "verify": "npm run check", "install": "npm ci" },
-  "documents": [{ "path": "AGENTS.md", "purpose": "Project-specific agent guidance" }],
-  "githubProject": {
-    "owner": "example-owner", "number": 1, "id": "PVT_project_id", "statusFieldId": "PVTSSF_status_field_id",
-    "statuses": { "ready": "Ready", "active": "In progress", "review": "In review", "done": "Done", "blocked": "Blocked" },
-    "statusOptionIds": { "ready": "ready_option_id", "active": "active_option_id", "review": "review_option_id", "done": "done_option_id", "blocked": "blocked_option_id" },
-    "priorityField": "Priority"
-  },
+  "repository": "<owner>/<repository>",
+  "trustedActors": ["<GitHub login allowed to publish governance artifacts>"],
+  "commands": { "verify": "<exact supported command from repository evidence>" },
+  "documents": [{ "path": "<repository-relative path>", "purpose": "<why agents must read it>" }],
   "merge": { "method": "squash", "automatic": false }
 }

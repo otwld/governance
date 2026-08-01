@@ -3,10 +3,19 @@
   "title": "Independent review",
   "type": "object",
   "additionalProperties": false,
-  "required": ["subjectKind", "subjectDigest", "verdict", "findings"],
+  "required": ["subject", "context", "verdict", "findings"],
   "properties": {
-    "subjectKind": { "enum": ["issue", "plan", "change", "verification"] },
-    "subjectDigest": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
+    "subject": {
+      "type": "object", "additionalProperties": false, "required": ["kind", "digest"],
+      "properties": { "kind": { "enum": ["issue", "plan", "change"] }, "digest": { "$ref": "#/$defs/digest" } }
+    },
+    "context": {
+      "type": "object", "additionalProperties": false, "required": ["issueDigest"],
+      "properties": {
+        "issueDigest": { "$ref": "#/$defs/digest" }, "planDigest": { "$ref": "#/$defs/digest" },
+        "changeDigest": { "$ref": "#/$defs/digest" }, "verificationDigest": { "$ref": "#/$defs/digest" }
+      }
+    },
     "verdict": { "enum": ["PASS", "CHANGES_REQUIRED", "BLOCKED"] },
     "findings": {
       "type": "array", "$comment": "The runtime validator enforces unique finding IDs.",
@@ -21,6 +30,11 @@
       }
     }
   },
+  "oneOf": [
+    { "properties": { "subject": { "properties": { "kind": { "const": "issue" } }, "required": ["kind"] }, "context": { "required": ["issueDigest"], "not": { "anyOf": [{ "required": ["planDigest"] }, { "required": ["changeDigest"] }, { "required": ["verificationDigest"] }] } } } },
+    { "properties": { "subject": { "properties": { "kind": { "const": "plan" } }, "required": ["kind"] }, "context": { "required": ["issueDigest", "planDigest"], "not": { "anyOf": [{ "required": ["changeDigest"] }, { "required": ["verificationDigest"] }] } } } },
+    { "properties": { "subject": { "properties": { "kind": { "const": "change" } }, "required": ["kind"] }, "context": { "required": ["issueDigest", "planDigest", "changeDigest", "verificationDigest"] } } }
+  ],
   "allOf": [
     {
       "if": { "properties": { "verdict": { "const": "PASS" } } },
@@ -42,5 +56,8 @@
       }
     }
   ],
-  "$defs": { "nonempty": { "type": "string", "minLength": 1, "pattern": "\\S" } }
+  "$defs": {
+    "nonempty": { "type": "string", "minLength": 1, "pattern": "\\S" },
+    "digest": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" }
+  }
 }

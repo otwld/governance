@@ -3,9 +3,10 @@
   "title": "Verification evidence",
   "type": "object",
   "additionalProperties": false,
-  "required": ["subjectDigest", "changeDigest", "status", "commands"],
+  "required": ["issueDigest", "planDigest", "changeDigest", "status", "commands"],
   "properties": {
-    "subjectDigest": { "$ref": "#/$defs/digest" },
+    "issueDigest": { "$ref": "#/$defs/digest" },
+    "planDigest": { "$ref": "#/$defs/digest" },
     "changeDigest": { "$ref": "#/$defs/digest" },
     "status": { "enum": ["PASS", "FAIL", "BLOCKED"] },
     "commands": {

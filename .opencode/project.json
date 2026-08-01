@@ -1,6 +1,7 @@
 {
   "$schema": "../schemas/project.schema.json",
   "repository": "OTWLD/governance",
+  "trustedActors": ["ntrehout"],
   "commands": { "verify": "npm run check" },
   "documents": [
     { "path": "AGENTS.md", "purpose": "Repository maintenance instructions" },

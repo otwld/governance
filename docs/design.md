@@ -2,21 +2,44 @@
 
 ## State and execution
 
-GitHub issues, Projects, pull requests, checks, and merge state are durable workflow evidence. Execution is strictly sequential. The project contract maps repository commands and optional Project fields without becoming a workflow database.
+GitHub issues, trusted-author artifact comments, Projects, pull requests, checks, merge state, and explicit workflow-state records are durable workflow evidence. The approval artifact is a trusted-author issue comment binding the issue contract and its review. Machine-recognizable markers and canonical digests permit idempotent recovery without treating summaries or URLs as authority. Public tools require OpenCode's supplied directory and perform bounded Git-worktree discovery of validated `.opencode/project.json`; no process cwd fallback or caller authority override exists. Execution is strictly sequential.
 
 Issue, plan, review, and verification contracts are structured, validated, and canonically digested. A digest binds approval and review to exact content. Publication requires a matching issue `PASS` review. Delivery creates and independently reviews the plan, then requires fresh review after the final change.
 
-## Role separation
+Workflow publication compares the durable artifact-chain head before writing. The
+orchestrator separately reconciles the Git head with the checkpoint before calling
+the publisher. A changed Git head invalidates downstream change, verification,
+change-review, and checkpoint state. Checkpoints preserve `planReviewDigest` and
+`changeReviewDigest` independently.
 
-- The brainstormer explores and cannot create work.
-- The task-shaper is the sole issue publication authority.
-- The orchestrator is the default primary and sole Git and GitHub delivery authority.
-- The planner produces read-only implementation plans.
-- The implementer edits and tests without GitHub, Git publication, or delegation.
-- The reviewer independently reviews issues, plans, and changes read-only.
-- The researcher performs bounded cited read-only investigation.
+## Roles and permissions
 
-All roles deny by default. Explicit allows are validated against the canonical manifest. The global OpenCode template denies `issue_factory`; only task-shaper overrides it.
+- The brainstormer explores product direction and context.
+- The task-shaper owns issue publication through `issue_factory`.
+- The orchestrator coordinates development and owns durable workflow-state and change-boundary tools.
+- The planner, implementer, reviewer, and researcher provide specialized work without being blocked from ordinary repository or diagnostic tools.
+
+This development distribution allows ordinary tools by default, including shell,
+external paths, web access, editing, and GitHub inspection. Role prompts describe
+responsibility rather than trying to encode every possible command in permission
+globs. Explicit ownership remains only for custom tools that publish durable workflow
+state: task-shaper receives `issue_factory`; orchestrator receives `workflow_state`
+and `change_boundary`; orchestrator and implementer receive `dependency_update`; and
+all roles may use read-only `governance_check`.
+
+## Model routing
+
+Each agent pins an explicit GPT-5.6 tier and reasoning effort so subagents do not
+inherit an accidentally expensive or underpowered primary model. Luna handles bounded
+high-volume research, Terra handles the balanced exploration, shaping, planning, and
+implementation workloads, and Sol is reserved for orchestration and independent
+review where failure impact justifies its cost. Assignments, escalation rules,
+evidence, local probes, and known client limits are maintained in
+[Agent model routing](models.md).
+
+## Semantic documentation
+
+Code and documentation form one change boundary. Issue and plan contracts carry first-class declaration, external-document, and rationale fields. Implementation keeps affected external semantics and non-obvious code contracts current; review and verification bind that evidence to the same change digest. Documentation stays proportional to behavior rather than tracking every declaration or local binding.
 
 ## Lifecycle
 
@@ -24,4 +47,4 @@ The complete state transitions, retry bounds, handoff requirements, and merge ga
 
 ## Failure posture
 
-Missing evidence, ambiguous state, digest mismatch, partial remote outcomes, unresolved decisions, unavailable required checks, and unsafe repository state are blockers. The workflow never broadens permissions, guesses a transition, or blindly retries a remote mutation.
+Missing material evidence, ambiguous durable state, digest mismatch, partial remote outcomes, and unsafe repository state are blockers for publication or merge. Ordinary development and diagnosis should continue with the best available tools instead of manufacturing workflow ceremony.
