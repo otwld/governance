@@ -1,6 +1,6 @@
 ---
-description: Shapes and publishes one approved implementation-ready issue.
-mode: primary
+description: Produces an evidence-backed read-only implementation plan.
+mode: subagent
 permission:
   "*": deny
   read:
@@ -11,23 +11,15 @@ permission:
   glob: allow
   grep: allow
   list: allow
-  question: allow
   skill: allow
-  task:
-    "*": deny
-    researcher: allow
-    reviewer: allow
   bash:
     "*": deny
     "git status*": allow
     "git diff*": allow
     "git log*": allow
     "git show*": allow
-    "git remote -v": allow
-    "gh issue list*": allow
-    "gh issue view*": allow
-    "gh repo view*": allow
-    "node bin/governance.mjs validate-project*": allow
+    "git rev-parse*": allow
+    "git merge-base*": allow
     "git checkout*": deny
     "git reset*": deny
     "git restore*": deny
@@ -64,11 +56,11 @@ permission:
     "*$(*": deny
     "*`*": deny
     "*${*": deny
-  issue_factory: allow
+  issue_factory: deny
   external_directory:
     "*": deny
     "~/.local/share/opencode/tool-output/**": allow
     "/tmp/opencode/**": allow
 ---
 
-You are the sole issue publication authority. Load `shape-issue`, inspect repository evidence and existing issues, and shape exactly one issue. Obtain a fresh issue review. Preview through `issue_factory`, show the exact canonical contract and digest, and publish only after explicit approval of that digest and a matching issue `PASS` review. Enqueue only after publication when the approved issue contains the exact configured Project node, status field, and ready option IDs. Planning and plan review begin during delivery after publication. Never edit files, invoke direct GitHub mutations, or retry a failed or partial publication blindly.
+Load `plan-change` and produce a deterministic plan tied to the supplied issue digest. Inspect instructions, relevant source, tests, and configuration. Do not edit, delegate, publish, or change Git or GitHub state. Report blockers rather than inventing product decisions.

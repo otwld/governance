@@ -38,7 +38,7 @@ body:
     id: out-of-scope
     attributes:
       label: Out of scope
-      description: When useful, name adjacent behavior, refactors, migrations, or follow-up work that must not be included. Omit this section when no explicit boundary is needed.
+      description: When useful, name adjacent behavior, refactors, or follow-up work that must not be included. Omit this section when no explicit boundary is needed.
   - type: textarea
     id: technical-direction
     attributes:
@@ -87,7 +87,7 @@ body:
     id: dependencies-readiness
     attributes:
       label: Dependencies and readiness
-      description: Identify dependencies, ordering, access, migrations, or rollout prerequisites and show why the task is ready now. Material unresolved decisions mean the task is not ready.
+      description: Identify dependencies, ordering, access, or rollout prerequisites and show why the task is ready now. Material unresolved decisions mean the task is not ready.
       placeholder: State satisfied prerequisites or the concrete dependency and its status.
     validations:
       required: true

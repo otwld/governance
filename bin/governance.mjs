@@ -12,14 +12,13 @@ import {
 const usage = `Usage: governance <command> [options]
 
 Commands:
-  validate-distribution [root]  Validate distributed agents, commands, tools, skills, and issue contract
+  validate-distribution [root]  Validate the manifest, assets, permissions, and contracts
   validate-project [repo]       Validate .opencode/project.json and its documents
-  install-global [options]      Install agents, commands, tools, and skills globally
+  install-global [options]      Reconcile managed assets in the OpenCode config home
   help                          Show this help
 
 install-global options:
   --config-home PATH            Config home (default: ~/.config/opencode)
-  --skills-home PATH            Skills home (default: /workspace/skills/skills)
   --apply                       Apply the planned writes (default: dry run)
 `;
 
@@ -39,7 +38,7 @@ function parseInstallOptions(args) {
       name = argument.slice(0, equals);
       value = argument.slice(equals + 1);
     }
-    if (name !== '--config-home' && name !== '--skills-home') {
+    if (name !== '--config-home') {
       throw new Error(`unknown install-global option: ${argument}`);
     }
     if (value === undefined) {
@@ -50,13 +49,13 @@ function parseInstallOptions(args) {
       index += 1;
     }
     if (value === '') throw new Error(`${name} requires a path`);
-    options[name === '--config-home' ? 'configHome' : 'skillsHome'] = value;
+    options.configHome = value;
   }
   return options;
 }
 
 function printPlan(result) {
-  process.stdout.write('Planned writes:\n');
+  process.stdout.write('Planned assets:\n');
   for (const entry of result.entries) {
     process.stdout.write(`  ${entry.destination} [${entry.status}]\n`);
   }
@@ -64,7 +63,7 @@ function printPlan(result) {
     if (result.entries.some((entry) => entry.destination === conflict.destination)) continue;
     process.stdout.write(`  ${conflict.destination} [conflict: ${conflict.reason}]\n`);
   }
-  process.stdout.write('Dry run complete; no changes made. Use --apply to install.\n');
+  process.stdout.write('Dry run complete; no changes made. Use --apply to reconcile.\n');
 }
 
 async function runInstallGlobal(args) {
@@ -76,17 +75,17 @@ async function runInstallGlobal(args) {
   }
   if (result.conflicts.length > 0) {
     for (const conflict of result.conflicts) {
-      process.stderr.write(`Conflict: ${conflict.destination}: ${conflict.reason}\n`);
+      process.stderr.write(`Conflict: ${conflict.destination}: local content is not safely managed\n`);
     }
     process.stderr.write(
-      `Installation aborted with ${result.conflicts.length} conflict(s); no files were written.\n`,
+      `Reconciliation aborted with ${result.conflicts.length} conflict(s); no files were changed.\n`,
     );
     return 1;
   }
 
   const identical = result.entries.filter((entry) => entry.status === 'identical').length;
   process.stdout.write(
-    `Installation complete: ${result.written.length} file(s) written, ${identical} identical file(s) unchanged.\n`,
+    `Reconciliation complete: ${result.changed.length} changed, ${identical} identical.\n`,
   );
   return 0;
 }

@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Verification evidence",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["subjectDigest", "changeDigest", "status", "commands"],
+  "properties": {
+    "subjectDigest": { "$ref": "#/$defs/digest" },
+    "changeDigest": { "$ref": "#/$defs/digest" },
+    "status": { "enum": ["PASS", "FAIL", "BLOCKED"] },
+    "commands": {
+      "type": "array", "minItems": 1,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["command", "cwd", "required", "exitCode", "summary", "testsOrTargets", "skipped"],
+        "properties": {
+          "command": { "$ref": "#/$defs/nonempty" }, "cwd": { "$ref": "#/$defs/nonempty" }, "required": { "type": "boolean" },
+          "exitCode": { "type": ["integer", "null"] }, "summary": { "$ref": "#/$defs/nonempty" },
+          "testsOrTargets": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/nonempty" } },
+          "skipped": { "type": "array", "items": { "$ref": "#/$defs/nonempty" } },
+          "unavailable": { "$ref": "#/$defs/nonempty" }
+        }
+      }
+    }
+  },
+  "allOf": [
+    { "if": { "properties": { "status": { "const": "PASS" } } }, "then": { "properties": { "commands": { "items": { "properties": { "exitCode": { "const": 0 }, "skipped": { "maxItems": 0 } }, "not": { "required": ["unavailable"] } } } } } },
+    { "if": { "properties": { "status": { "const": "FAIL" } } }, "then": { "properties": { "commands": { "contains": { "properties": { "exitCode": { "type": "integer", "not": { "const": 0 } } }, "required": ["exitCode"] } } } } },
+    { "if": { "properties": { "status": { "const": "BLOCKED" } } }, "then": { "properties": { "commands": { "contains": { "anyOf": [ { "required": ["unavailable"] }, { "properties": { "required": { "const": true }, "skipped": { "minItems": 1 } }, "required": ["required", "skipped"] } ] } } } } }
+  ],
+  "$defs": {
+    "nonempty": { "type": "string", "minLength": 1, "pattern": "\\S" },
+    "digest": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" }
+  }
+}

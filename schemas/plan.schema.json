@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Implementation plan",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["issueDigest", "summary", "steps", "validation", "risks", "compatibility", "rollback"],
+  "properties": {
+    "issueDigest": { "$ref": "#/$defs/digest" },
+    "summary": { "$ref": "#/$defs/nonempty" },
+    "steps": {
+      "type": "array", "minItems": 1,
+      "$comment": "The runtime validator enforces unique step IDs.",
+      "items": { "type": "object", "additionalProperties": false, "required": ["id", "action", "acceptanceScenarioIds"], "properties": { "id": { "$ref": "#/$defs/id" }, "action": { "$ref": "#/$defs/nonempty" }, "acceptanceScenarioIds": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "#/$defs/id" } } } }
+    },
+    "validation": {
+      "type": "array", "minItems": 1, "$comment": "The runtime validator enforces unique stepId values and complete step coverage.",
+      "items": { "type": "object", "additionalProperties": false, "required": ["stepId", "commands"], "properties": { "stepId": { "$ref": "#/$defs/id" }, "commands": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/nonempty" } } } }
+    },
+    "risks": { "type": "array", "items": { "$ref": "#/$defs/nonempty" } },
+    "compatibility": { "type": "array", "items": { "$ref": "#/$defs/nonempty" } },
+    "rollback": { "$ref": "#/$defs/nonempty" }
+  },
+  "$defs": {
+    "nonempty": { "type": "string", "minLength": 1, "pattern": "\\S" },
+    "id": { "type": "string", "pattern": "^[A-Z][A-Z0-9-]*$" },
+    "digest": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" }
+  }
+}
