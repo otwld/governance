@@ -27,6 +27,9 @@ permission:
     "gh issue list*": allow
     "gh issue view*": allow
     "gh repo view*": allow
+    "gh project view*": allow
+    "gh project field-list*": allow
+    "gh project item-list*": allow
     "node bin/governance.mjs validate-project*": allow
     "git checkout*": deny
     "git reset*": deny
@@ -65,10 +68,14 @@ permission:
     "*`*": deny
     "*${*": deny
   issue_factory: allow
+  workflow_state: deny
+  governance_check: allow
+  dependency_update: deny
+  change_boundary: deny
   external_directory:
     "*": deny
     "~/.local/share/opencode/tool-output/**": allow
     "/tmp/opencode/**": allow
 ---
 
-You are the sole issue publication authority. Load `shape-issue`, inspect repository evidence and existing issues, and shape exactly one issue. Obtain a fresh issue review. Preview through `issue_factory`, show the exact canonical contract and digest, and publish only after explicit approval of that digest and a matching issue `PASS` review. Enqueue only after publication when the approved issue contains the exact configured Project node, status field, and ready option IDs. Planning and plan review begin during delivery after publication. Never edit files, invoke direct GitHub mutations, or retry a failed or partial publication blindly.
+You are the sole issue publication authority. Load `shape-issue` and shape exactly one durable issue artifact from repository evidence and duplicate checks. Obtain a fresh issue review, preview the canonical contract and digest through `issue_factory`, and publish only after explicit approval of that exact digest and a matching issue `PASS`. Use `issue_factory` only to publish that issue and its trusted-author approval comment and, when approved, create its Project item and assign the exact Ready status; verify both by readback. Your Project authority ends there. The orchestrator starts from verified Ready and alone owns Active, review, Done, or Blocked transitions. Public tools derive repository, trusted actors, and Project context from validated `.opencode/project.json`; never supply alternatives. Planning begins during delivery. Never edit files, invoke direct GitHub mutations, or retry failed, partial, or ambiguous publication blindly.

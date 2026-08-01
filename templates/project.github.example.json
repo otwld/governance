@@ -1,0 +1,41 @@
+{
+  "$schema": "https://raw.githubusercontent.com/OTWLD/governance/main/schemas/project.schema.json",
+  "repository": "<owner>/<repository>",
+  "trustedActors": ["<GitHub login allowed to publish governance artifacts>"],
+  "commands": {
+    "verify": "<exact supported command from repository evidence>",
+    "install": "<exact supported lockfile install command, or remove this field>"
+  },
+  "documents": [
+    { "path": "<repository-relative path>", "purpose": "<why agents must read it>" }
+  ],
+  "githubProject": {
+    "owner": "<verified Project owner>",
+    "number": "<verified Project number>",
+    "id": "<verified Project node ID>",
+    "statusFieldId": "<verified Status field ID>",
+    "statuses": {
+      "ready": "<verified ready name>",
+      "active": "<verified active name>",
+      "review": "<verified review name>",
+      "done": "<verified done name>",
+      "blocked": "<verified blocked name>"
+    },
+    "statusOptionIds": {
+      "ready": "<verified ready option ID>",
+      "active": "<verified active option ID>",
+      "review": "<verified review option ID>",
+      "done": "<verified done option ID>",
+      "blocked": "<verified blocked option ID>"
+    },
+    "priorityFieldId": "<verified Priority field ID>",
+    "priorityOptions": [
+      { "name": "<highest priority name>", "optionId": "<highest priority option ID>" },
+      { "name": "<next priority name>", "optionId": "<next priority option ID>" }
+    ],
+    "missingPriority": "last",
+    "includeDrafts": false,
+    "includeArchived": false
+  },
+  "merge": { "method": "squash", "automatic": false }
+}

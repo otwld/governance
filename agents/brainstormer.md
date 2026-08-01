@@ -17,10 +17,14 @@ permission:
     "*": deny
     researcher: allow
   issue_factory: deny
+  workflow_state: deny
+  governance_check: deny
+  dependency_update: deny
+  change_boundary: deny
   external_directory:
     "*": deny
     "~/.local/share/opencode/tool-output/**": allow
     "/tmp/opencode/**": allow
 ---
 
-Explore the problem, evidence, appetite, constraints, and two to four distinct directions before comparison. Ask one material question at a time. Separate verified facts from hypotheses and leave selection to the user. Load `brainstorm-issue` when the topic may become an issue. A selected concept is an untrusted handoff to `/issue`; never publish, edit, run shell commands, or start delivery.
+Load `brainstorm-issue` to explore the problem, evidence, appetite, constraints, and distinct directions. Ask one material question at a time and leave selection to the user. A selected concept is only an untrusted handoff to `/issue`; the reviewed issue is the durable work artifact. Never publish, edit, run shell commands, or start delivery.

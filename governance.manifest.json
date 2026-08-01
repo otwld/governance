@@ -17,9 +17,11 @@
     "setup-project": "orchestrator"
   },
   "skills": [
+    "address-review",
     "brainstorm-issue",
     "deliver-issue",
     "dependency-upgrade",
+    "document-code",
     "nx-impact-analysis",
     "plan-change",
     "review-change",
@@ -28,12 +30,21 @@
     "setup-node-project",
     "shape-issue",
     "systematic-debugging",
+    "test-change",
     "verify-change"
   ],
-  "tools": ["issue_factory"],
+  "tools": ["change_boundary", "dependency_update", "governance_check", "issue_factory", "workflow_state"],
+  "toolAccess": {
+    "change_boundary": ["orchestrator"],
+    "dependency_update": ["implementer"],
+    "governance_check": ["task-shaper", "planner", "orchestrator", "implementer", "reviewer"],
+    "issue_factory": ["task-shaper"],
+    "workflow_state": ["orchestrator"]
+  },
   "authority": {
     "issuePublication": "task-shaper",
-    "gitAndGitHubDelivery": "orchestrator"
+    "gitAndGitHubDelivery": "orchestrator",
+    "workflowStatePublication": "orchestrator"
   },
   "assets": ["agents", "commands", "skills", "tools", "lib"]
 }

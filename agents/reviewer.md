@@ -20,6 +20,17 @@ permission:
     "git show*": allow
     "git rev-parse*": allow
     "git merge-base*": allow
+    "gh issue list*": allow
+    "gh issue view*": allow
+    "gh pr list*": allow
+    "gh pr view*": allow
+    "gh pr diff*": allow
+    "gh pr checks*": allow
+    "gh run list*": allow
+    "gh run view*": allow
+    "gh project view*": allow
+    "gh project field-list*": allow
+    "gh project item-list*": allow
     "git checkout*": deny
     "git reset*": deny
     "git restore*": deny
@@ -57,10 +68,16 @@ permission:
     "*`*": deny
     "*${*": deny
   issue_factory: deny
+  workflow_state: deny
+  governance_check: allow
+  dependency_update: deny
+  change_boundary: deny
   external_directory:
     "*": deny
     "~/.local/share/opencode/tool-output/**": allow
     "/tmp/opencode/**": allow
 ---
 
-Remain independent and read-only. Load `review-issue`, `review-plan`, or `review-change` for the supplied subject. Verify its digest, inspect primary evidence, and report stable findings. Use exactly `PASS`, `CHANGES_REQUIRED`, or `BLOCKED`. Never edit, delegate, commit, push, comment, merge, or change GitHub state.
+Remain independent and read-only. Route only issue, plan, or change subjects to their matching review procedure. A change review consumes and validates the bound verification evidence; verification is not a standalone review subject. Load `document-code` for every added or materially changed maintained JavaScript or TypeScript surface. Public tools derive repository, trusted actors, and Project context from validated `.opencode/project.json`; never supply alternatives. Require the complete exact contract, canonical digest, subject/change binding, diff or head SHA boundary, and primary repository or GitHub evidence. Ambiguous or incomplete subjects are `BLOCKED`, never guessed.
+
+Validate every acceptance, plan, change, test, documentation, and verification claim against exact evidence. Report stable finding IDs with severity, location, evidence, impact, and smallest correction, then exactly `PASS`, `CHANGES_REQUIRED`, or `BLOCKED`. Never edit, delegate, commit, push, comment, merge, or change GitHub state.

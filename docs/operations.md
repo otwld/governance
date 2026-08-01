@@ -6,18 +6,55 @@
 - Protected default branch with required checks and squash merge enabled.
 - For Project runs, one unambiguous Status field, a configured Priority field, and no concurrent runner. Single-issue delivery does not require Priority.
 
-Grant issue write only to the task-shaper's execution identity. Grant branch, pull request, check, and Project delivery permissions only to the orchestrator's identity. Do not grant administration, protection bypass, force push, deployment, secret management, or package publication.
+Authenticate GitHub CLI non-interactively with a least-privilege credential whose repository and Project owner match `.opencode/project.json`. Verify `gh auth status`, repository identity, Project access, branch protection, required checks, and squash settings before a mutation. Never print, read, copy, or store tokens in repository files or workflow artifacts.
+
+Grant issue write only to the task-shaper's execution identity. For Project intake,
+give task-shaper only item-add, the item-edit needed to assign the configured Ready
+option, and Project readback; it must not perform later status edits. Give orchestrator
+branch, pull request, and check permissions plus Project item-edit/readback for
+post-Ready Active, review, Done, and Blocked transitions. Do not grant either identity
+administration, protection bypass, force push, deployment, secret management, or
+package publication. Keep reviewer and researcher credentials read-only.
 
 ## Installation
 
-Run `governance install-global` and inspect every `write`, `identical`, `replace`, `remove`, or `conflict` status. Apply only a conflict-free plan. A conflict means the destination differs from both the desired asset and the previously recorded managed hash; preserve it and reconcile manually. After apply, merge `templates/opencode.json` into the active configuration without replacing providers or MCP settings, then restart OpenCode.
+From a trusted checkout, run `governance install-global` and inspect every `write`, `identical`, `replace`, `remove`, or `conflict` status. Retain the dry-run output and current managed manifest until acceptance. Apply only a conflict-free plan. A conflict means the destination differs from both the desired asset and the previously recorded managed hash; preserve it and reconcile manually. After apply, merge `templates/opencode.json` into the active configuration without replacing providers or MCP settings, then restart OpenCode.
+
+If installation fails, use the installer's rollback result and retained manifest to determine which managed paths changed. Do not delete unknown files or hand-edit the ownership manifest. Restore the prior known-good OpenCode configuration, restart, and rerun dry-run before another apply. Keep workflow artifacts and install evidence according to the repository's audit retention policy; never retain secrets.
 
 ## Repository setup
 
-Run `/setup-project`. Confirm the repository identity, exact commands, document paths, Project names and node IDs, Status field and option IDs, required checks, and squash policy from direct evidence. The setup must not create Project fields or repository settings. Validate with `governance validate-project <root>`.
+Run `/setup-project`. Its first handoff is evidence-only; its second delegates file edits to the implementer. Confirm repository identity, exact commands, document paths, trusted GitHub artifact authors, Project names and node IDs, Status and deterministic Priority configuration, required checks, and squash policy from direct local and GitHub evidence. Record exact GitHub logins in top-level `trustedActors`; this is an allow-list for artifact-comment provenance, not a permission grant. Record `priorityOptions` as ordered `{name, optionId}` objects from highest to lowest priority, set `missingPriority` explicitly, and keep `includeDrafts` and `includeArchived` false. Include the automation identity and authorized human publishers, remove departed or compromised identities, and block artifacts from anyone else. Start from `templates/project.json` for non-Project delivery or `templates/project.github.example.json` for Project-backed delivery, replacing every placeholder. Setup must not create Project fields, alter repository settings, or overwrite existing governance files blindly. Validate with `governance validate-project <root>` and the configured verification command.
+
+## Delivery preflight
+
+Before every run, require a fully understood working tree, the expected base and remote, readable configured documents, valid project configuration, authenticated GitHub reads, and no ambiguous in-flight Project item. Public wrappers require OpenCode's supplied `context.directory`, discover config only inside that bounded Git worktree, and reject absent context rather than using process cwd; never pass caller-selected alternatives. Use read-only `governance_check` and workflow inspection to fetch durable approval, plan, review, verification, and workflow comments; verify authors and recompute bindings. Queue inspection uses paginated GraphQL field IDs and always excludes drafts and archived items. Use `change_boundary` for immutable base/tree evidence. Preserve unrelated work. Stop before mutation when evidence is missing, stale, duplicated, untrusted, or contradictory.
 
 ## Daily flow
 
-Use `/brainstorm` only when direction needs exploration. Use `/issue` for direct shaping or a selected concept. Use `/run-issue` for one approved issue and `/run-project` for an ordered Project queue. The detailed delivery policy is [the canonical lifecycle](../skills/deliver-issue/references/lifecycle.md).
+Use `/brainstorm` only when direction needs exploration. Use `/issue` for direct shaping or a selected concept; task-shaper may publish, create the intake Project item, and assign Ready only. Use `/run-issue` for one approved issue and `/run-project` for an ordered Project queue; orchestrator starts from verified Ready and alone owns Active, review, Done, and Blocked transitions. The detailed delivery policy is [the canonical lifecycle](../skills/deliver-issue/references/lifecycle.md).
+
+For an approved dependency task, `dependency_update` changes one existing direct
+`dependencies` or `devDependencies` entry in the root package only. It requires a
+pinned `packageManager`. For npm, preflight resolves npm from `PATH` and requires its
+exact version to match the pin's executable comparison version.
+For pnpm and Yarn Berry, execution uses Corepack with that comparison version. Validate and preserve the full
+exact `packageManager` descriptor; only a terminal Corepack integrity hash
+(`+sha224.<hex>`, `+sha256.<hex>`, `+sha384.<hex>`, or `+sha512.<hex>`) is omitted from
+the executable comparison. Prereleases remain part of the comparison, and ordinary
+SemVer build metadata is retained rather than treated as integrity. Bun, arbitrary
+commands, target workspaces, transitive dependency updates, and package scripts are
+unsupported.
+
+Immediately before approval or workflow publication, compare current head with the
+checkpoint. If it moved, publish nothing, invalidate the prior change, verification,
+change review, and checkpoint evidence, then rebuild the evidence chain. Preserve
+`planReviewDigest` and `changeReviewDigest` separately in every checkpoint/readback.
 
 On a blocker, preserve Git and GitHub state and report the issue, stage, evidence, attempted review or CI rounds, and exact human action. Never start a second Project runner, create a duplicate branch or issue, force push, bypass checks, or retry a partial publication without first verifying remote state.
+
+## Recovery, concurrency, and incidents
+
+Operations are idempotent only after reconciling remote state. On restart, inspect the Project item, branch, pull request, head SHA, checks, merge state, durable artifact markers, and workflow-state record before selecting a stage. Resume one unambiguous item; more than one active/review item or a partial remote mutation is `BLOCKED`. Use an external single-runner control for Project mode and never infer safety merely because a local process ended.
+
+For an incident, halt mutations, preserve logs and artifact URLs without credentials, record UTC time, repository, issue, stage, head SHA, digest set, correction/CI counts, commands and outcomes, and observed remote state. Revoke or rotate a credential if exposure is suspected. Recovery requires a human-confirmed state reconciliation; do not force push, bypass protection, delete branches, or edit markers to manufacture consistency. Retain issue, pull-request, review, verification, CI, and workflow-state evidence through the configured audit period and any rollback window.

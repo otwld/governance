@@ -2,7 +2,11 @@
   "$schema": "https://opencode.ai/config.json",
   "default_agent": "orchestrator",
   "permission": {
-    "issue_factory": "deny"
+    "issue_factory": "deny",
+    "workflow_state": "deny",
+    "governance_check": "deny",
+    "dependency_update": "deny",
+    "change_boundary": "deny"
   },
   "skills": {
     "paths": [
