@@ -1,0 +1,39 @@
+{
+  "agents": {
+    "brainstormer": { "mode": "primary" },
+    "task-shaper": { "mode": "primary" },
+    "orchestrator": { "mode": "primary", "default": true },
+    "planner": { "mode": "subagent", "readOnly": true },
+    "implementer": { "mode": "subagent" },
+    "reviewer": { "mode": "subagent", "readOnly": true },
+    "researcher": { "mode": "subagent", "readOnly": true }
+  },
+  "commands": {
+    "brainstorm": "brainstormer",
+    "issue": "task-shaper",
+    "run-issue": "orchestrator",
+    "run-project": "orchestrator",
+    "review": "reviewer",
+    "setup-project": "orchestrator"
+  },
+  "skills": [
+    "brainstorm-issue",
+    "deliver-issue",
+    "dependency-upgrade",
+    "nx-impact-analysis",
+    "plan-change",
+    "review-change",
+    "review-issue",
+    "review-plan",
+    "setup-node-project",
+    "shape-issue",
+    "systematic-debugging",
+    "verify-change"
+  ],
+  "tools": ["issue_factory"],
+  "authority": {
+    "issuePublication": "task-shaper",
+    "gitAndGitHubDelivery": "orchestrator"
+  },
+  "assets": ["agents", "commands", "skills", "tools", "lib"]
+}

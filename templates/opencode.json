@@ -1,13 +1,12 @@
 {
   "$schema": "https://opencode.ai/config.json",
   "default_agent": "orchestrator",
-  "subagent_depth": 1,
   "permission": {
-    "create_issue": "deny"
+    "issue_factory": "deny"
   },
   "skills": {
     "paths": [
-      "/workspace/skills/skills"
+      "~/.config/opencode/skills"
     ]
   }
 }

@@ -1,21 +1,10 @@
 {
-  "$schema": "https://raw.githubusercontent.com/OTWLD/governance/main/schemas/project.schema.json",
-  "version": 1,
-  "commands": {
-    "verify": "npm run check"
-  },
+  "$schema": "../schemas/project.schema.json",
+  "repository": "OTWLD/governance",
+  "commands": { "verify": "npm run check" },
   "documents": [
-    {
-      "path": "AGENTS.md",
-      "purpose": "Repository maintenance instructions"
-    },
-    {
-      "path": "docs",
-      "purpose": "Design, operations, implementation, and roadmap documentation"
-    }
+    { "path": "AGENTS.md", "purpose": "Repository maintenance instructions" },
+    { "path": "docs", "purpose": "Product design, contracts, and operations" }
   ],
-  "merge": {
-    "method": "squash",
-    "automatic": false
-  }
+  "merge": { "method": "squash", "automatic": false }
 }

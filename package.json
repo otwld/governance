@@ -1,7 +1,6 @@
 {
   "name": "opencode-governance",
-  "version": "0.1.0",
-  "description": "Dependency-free validation tools for an OpenCode governance distribution.",
+  "description": "OpenCode-first Project-backed issue factory and delivery governance.",
   "type": "module",
   "private": true,
   "bin": {

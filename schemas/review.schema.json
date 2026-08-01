@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Independent review",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["subjectKind", "subjectDigest", "verdict", "findings"],
+  "properties": {
+    "subjectKind": { "enum": ["issue", "plan", "change", "verification"] },
+    "subjectDigest": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
+    "verdict": { "enum": ["PASS", "CHANGES_REQUIRED", "BLOCKED"] },
+    "findings": {
+      "type": "array", "$comment": "The runtime validator enforces unique finding IDs.",
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["id", "severity", "location", "evidence", "impact", "correction"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[A-Z][A-Z0-9-]*$" },
+          "severity": { "enum": ["low", "medium", "high", "blocker"] },
+          "location": { "$ref": "#/$defs/nonempty" }, "evidence": { "$ref": "#/$defs/nonempty" }, "impact": { "$ref": "#/$defs/nonempty" }, "correction": { "$ref": "#/$defs/nonempty" }
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "verdict": { "const": "PASS" } } },
+      "then": { "properties": { "findings": { "maxItems": 0 } } }
+    },
+    {
+      "if": { "properties": { "verdict": { "const": "CHANGES_REQUIRED" } } },
+      "then": { "properties": { "findings": { "minItems": 1 } } }
+    },
+    {
+      "if": { "properties": { "verdict": { "const": "BLOCKED" } } },
+      "then": {
+        "properties": {
+          "findings": {
+            "minItems": 1,
+            "contains": { "properties": { "severity": { "const": "blocker" } }, "required": ["severity"] }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": { "nonempty": { "type": "string", "minLength": 1, "pattern": "\\S" } }
+}

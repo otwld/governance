@@ -1,78 +1,39 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://raw.githubusercontent.com/OTWLD/governance/main/schemas/project.schema.json",
-  "title": "OpenCode governance project configuration",
+  "title": "Governance project",
   "type": "object",
   "additionalProperties": false,
-  "required": ["version", "commands", "documents", "merge"],
+  "required": ["repository", "commands", "documents", "merge"],
   "properties": {
-    "$schema": {
-      "type": "string",
-      "minLength": 1,
-      "pattern": "\\S"
-    },
-    "version": {
-      "const": 1
-    },
+    "$schema": { "type": "string", "minLength": 1, "pattern": "\\S" },
+    "repository": { "type": "string", "pattern": "^[^/\\s]+/[^/\\s]+$" },
     "commands": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["verify"],
+      "type": "object", "additionalProperties": false, "required": ["verify"],
       "properties": {
-        "verify": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Runs only test, lint, typecheck, check, validate, build, ci, or verify scripts (including colon-suffixed variants), node --test/--check, or Nx affected/run-many/test/lint/build through an approved runner. Mutating --fix, --write, snapshot-update, watch, standalone -u, and standalone -w flags are forbidden; the governance CLI enforces the same restriction.",
-          "pattern": "^(?!.*(?:^|[ \\t])(?:--fix|--write|--update|--updateSnapshot|--updateSnapshots|--update-snapshot|--update-snapshots|--test-update-snapshots|--watch|--watchAll|--watch-all|-u|-w)(?:=|[ \\t]|$))(?:npm[ \\t]+(?:test|run[ \\t]+(?:test|lint|typecheck|check|validate|build|ci|verify)(?::[A-Za-z0-9_@%+=,./*?-]+)*)|pnpm[ \\t]+(?:test|run[ \\t]+(?:test|lint|typecheck|check|validate|build|ci|verify)(?::[A-Za-z0-9_@%+=,./*?-]+)*)|yarn[ \\t]+(?:run[ \\t]+)?(?:test|lint|typecheck|check|validate|build|ci|verify)(?::[A-Za-z0-9_@%+=,./*?-]+)*|bun[ \\t]+(?:test|run[ \\t]+(?:test|lint|typecheck|check|validate|build|ci|verify)(?::[A-Za-z0-9_@%+=,./*?-]+)*)|(?:nx|npx[ \\t]+nx|pnpm[ \\t]+(?:nx|exec[ \\t]+nx)|yarn[ \\t]+nx|bunx[ \\t]+nx)[ \\t]+(?:affected|run-many|test|lint|build)|node[ \\t]+(?:--test|--check))(?:[ \\t]+[A-Za-z0-9_@%+=:,./*?-]+)*$"
-        },
-        "install": {
-          "type": "string",
-          "minLength": 1,
-          "pattern": "^(?:npm[ \\t]+ci|pnpm[ \\t]+install[ \\t]+--frozen-lockfile|yarn[ \\t]+install[ \\t]+--immutable|bun[ \\t]+install[ \\t]+--frozen-lockfile)(?:[ \\t]+[A-Za-z0-9_@%+=:,./*?-]+)*$"
-        }
+        "verify": { "type": "string", "minLength": 1, "pattern": "^(?!.*[\\r\\n])(?!.*(?:^| )(?:--fix|--write|--update(?:-?snapshots?|Snapshots?)?|--watch(?:All|-all)?|-u|-w)(?:=| |$))(?:npm (?:test|run (?:test|lint|typecheck|check|validate|build|ci|verify)(?::[A-Za-z0-9_@%+=:,./*?\\[\\]-]+)*)|pnpm (?:test|run (?:test|lint|typecheck|check|validate|build|ci|verify)(?::[A-Za-z0-9_@%+=:,./*?\\[\\]-]+)*)|yarn (?:run )?(?:test|lint|typecheck|check|validate|build|ci|verify)(?::[A-Za-z0-9_@%+=:,./*?\\[\\]-]+)*|bun (?:test|run (?:test|lint|typecheck|check|validate|build|ci|verify)(?::[A-Za-z0-9_@%+=:,./*?\\[\\]-]+)*)|node --(?:test|check)|(?:nx|npx nx|pnpm (?:nx|exec nx)|yarn nx|bunx nx) (?:affected|run-many|test|lint|build))(?: [A-Za-z0-9_@%+=:,./*?\\[\\]-]+)*$" },
+        "install": { "type": "string", "minLength": 1, "pattern": "^(?!.*[\\r\\n])(?:npm ci|pnpm install --frozen-lockfile|yarn install --immutable|bun install --frozen-lockfile)(?: [A-Za-z0-9_@%+=:,./*?\\[\\]-]+)*$" }
       }
     },
     "documents": {
-      "type": "array",
-      "minItems": 1,
-      "uniqueItems": true,
+      "type": "array", "minItems": 1, "uniqueItems": true,
       "items": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": ["path", "purpose"],
+        "type": "object", "additionalProperties": false, "required": ["path", "purpose"],
         "properties": {
-          "path": {
-            "type": "string",
-            "minLength": 1,
-            "pattern": "^(?![A-Za-z]:)(?!.*\\\\)(?!\\s)(?!.*\\s$)(?!.*(?:^|/)\\.{1,2}(?:/|$))[^/]+(?:/[^/]+)*$"
-          },
-          "purpose": {
-            "type": "string",
-            "minLength": 1,
-            "pattern": "\\S"
-          }
+          "path": { "type": "string", "pattern": "^(?!/)(?!.*(?:^|/)\\.{1,2}(?:/|$))(?!.*\\\\)[^/]+(?:/[^/]+)*$" },
+          "purpose": { "type": "string", "minLength": 1, "pattern": "\\S" }
         }
       }
     },
     "githubProject": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["owner", "number", "statuses"],
+      "type": "object", "additionalProperties": false, "required": ["owner", "number", "id", "statusFieldId", "statusOptionIds", "statuses"],
       "properties": {
-        "owner": {
-          "type": "string",
-          "minLength": 1,
-          "pattern": "\\S"
-        },
-        "number": {
-          "type": "integer",
-          "minimum": 1
-        },
+        "owner": { "type": "string", "minLength": 1, "pattern": "\\S" },
+        "number": { "type": "integer", "minimum": 1 },
+        "id": { "type": "string", "minLength": 1, "pattern": "\\S" },
+        "statusFieldId": { "type": "string", "minLength": 1, "pattern": "\\S" },
         "statuses": {
-          "type": "object",
-          "description": "Maps lifecycle roles to status names. The five values must be pairwise distinct; the governance CLI enforces this because standard JSON Schema cannot compare sibling values.",
-          "$comment": "governance validate-project enforces pairwise-distinct status values because standard JSON Schema cannot compare sibling values.",
-          "additionalProperties": false,
+          "type": "object", "additionalProperties": false,
           "required": ["ready", "active", "review", "done", "blocked"],
           "properties": {
             "ready": { "type": "string", "minLength": 1, "pattern": "\\S" },
@@ -82,25 +43,23 @@
             "blocked": { "type": "string", "minLength": 1, "pattern": "\\S" }
           }
         },
-        "priorityField": {
-          "type": "string",
-          "minLength": 1,
-          "pattern": "\\S"
-        }
+        "statusOptionIds": {
+          "type": "object", "additionalProperties": false,
+          "required": ["ready", "active", "review", "done", "blocked"],
+          "properties": {
+            "ready": { "type": "string", "minLength": 1, "pattern": "\\S" },
+            "active": { "type": "string", "minLength": 1, "pattern": "\\S" },
+            "review": { "type": "string", "minLength": 1, "pattern": "\\S" },
+            "done": { "type": "string", "minLength": 1, "pattern": "\\S" },
+            "blocked": { "type": "string", "minLength": 1, "pattern": "\\S" }
+          }
+        },
+        "priorityField": { "type": "string", "minLength": 1, "pattern": "\\S" }
       }
     },
     "merge": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["method", "automatic"],
-      "properties": {
-        "method": {
-          "const": "squash"
-        },
-        "automatic": {
-          "type": "boolean"
-        }
-      }
+      "type": "object", "additionalProperties": false, "required": ["method", "automatic"],
+      "properties": { "method": { "const": "squash" }, "automatic": { "type": "boolean" } }
     }
   }
 }

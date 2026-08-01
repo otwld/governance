@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Approved issue",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["repository", "title", "outcome", "problemEvidence", "requirements", "scope", "technicalDirection", "acceptanceScenarios", "validation", "dependencies", "assumptions", "references"],
+  "properties": {
+    "repository": { "type": "string", "pattern": "^[^/\\s]+/[^/\\s]+$" },
+    "title": { "$ref": "#/$defs/nonempty" },
+    "outcome": { "$ref": "#/$defs/nonempty" },
+    "problemEvidence": {
+      "type": "array", "minItems": 1,
+      "items": { "type": "object", "additionalProperties": false, "required": ["source", "conclusion"], "properties": { "source": { "$ref": "#/$defs/nonempty" }, "conclusion": { "$ref": "#/$defs/nonempty" } } }
+    },
+    "requirements": {
+      "type": "array", "minItems": 1, "$comment": "The runtime validator enforces unique requirement IDs.",
+      "items": { "type": "object", "additionalProperties": false, "required": ["id", "text"], "properties": { "id": { "$ref": "#/$defs/id" }, "text": { "$ref": "#/$defs/nonempty" } } }
+    },
+    "scope": { "type": "object", "additionalProperties": false, "required": ["included", "excluded"], "properties": { "included": { "$ref": "#/$defs/nonemptyArray" }, "excluded": { "$ref": "#/$defs/stringArray" } } },
+    "technicalDirection": { "type": "object", "additionalProperties": false, "required": ["decisions", "constraints", "discretion"], "properties": { "decisions": { "$ref": "#/$defs/stringArray" }, "constraints": { "$ref": "#/$defs/nonemptyArray" }, "discretion": { "$ref": "#/$defs/stringArray" } } },
+    "acceptanceScenarios": {
+      "type": "array", "minItems": 1, "$comment": "The runtime validator enforces unique acceptance scenario IDs.",
+      "items": { "type": "object", "additionalProperties": false, "required": ["id", "given", "when", "then"], "properties": { "id": { "$ref": "#/$defs/id" }, "given": { "$ref": "#/$defs/nonempty" }, "when": { "$ref": "#/$defs/nonempty" }, "then": { "$ref": "#/$defs/nonemptyArray" } } }
+    },
+    "validation": { "type": "object", "additionalProperties": false, "required": ["focused", "required"], "properties": { "focused": { "$ref": "#/$defs/stringArray" }, "required": { "$ref": "#/$defs/nonemptyArray" } } },
+    "dependencies": { "$ref": "#/$defs/stringArray" },
+    "assumptions": { "$ref": "#/$defs/stringArray" },
+    "references": { "$ref": "#/$defs/stringArray" },
+    "projectTarget": {
+      "type": "object", "additionalProperties": false,
+      "required": ["owner", "number", "projectId", "statusFieldId", "readyOptionId"],
+      "properties": { "owner": { "type": "string", "pattern": "^[A-Za-z0-9-]+$" }, "number": { "type": "integer", "minimum": 1 }, "projectId": { "$ref": "#/$defs/nonempty" }, "statusFieldId": { "$ref": "#/$defs/nonempty" }, "readyOptionId": { "$ref": "#/$defs/nonempty" } }
+    }
+  },
+  "$defs": {
+    "nonempty": { "type": "string", "minLength": 1, "pattern": "\\S" },
+    "id": { "type": "string", "pattern": "^[A-Z][A-Z0-9-]*$" },
+    "stringArray": { "type": "array", "items": { "$ref": "#/$defs/nonempty" } },
+    "nonemptyArray": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/nonempty" } }
+  }
+}
