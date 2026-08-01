@@ -11,21 +11,24 @@ checkpoint binding. A changed head invalidates downstream change, verification,
 change-review, and checkpoint state. Checkpoints preserve `planReviewDigest` and
 `changeReviewDigest` independently.
 
-## Role separation
+## Roles and permissions
 
-- The brainstormer explores and cannot create work.
-- The task-shaper alone publishes an approved issue, creates its intake Project item, and assigns Ready.
-- The orchestrator starts from verified Ready and alone owns Active, review, Done, and Blocked transitions plus all other delivery Git/GitHub mutations.
-- The planner produces read-only implementation plans.
-- The implementer edits and tests without GitHub, Git publication, or delegation.
-- The reviewer independently reviews issues, plans, and changes read-only.
-- The researcher performs bounded cited read-only investigation.
+- The brainstormer explores product direction and context.
+- The task-shaper owns issue publication through `issue_factory`.
+- The orchestrator coordinates development and owns durable workflow-state and change-boundary tools.
+- The planner, implementer, reviewer, and researcher provide specialized work without being blocked from ordinary repository or diagnostic tools.
 
-All roles deny by default. Explicit allows are validated against the canonical manifest tool-access matrix. The global OpenCode template denies every custom tool. Only task-shaper receives `issue_factory`; only orchestrator receives `workflow_state` and `change_boundary`; only implementer receives `dependency_update`; and the delivery/review roles receive read-only `governance_check`.
+This development distribution allows ordinary tools by default, including shell,
+external paths, web access, editing, and GitHub inspection. Role prompts describe
+responsibility rather than trying to encode every possible command in permission
+globs. Explicit ownership remains only for custom tools that publish durable workflow
+state: task-shaper receives `issue_factory`; orchestrator receives `workflow_state`
+and `change_boundary`; orchestrator and implementer receive `dependency_update`; and
+all roles may use read-only `governance_check`.
 
 ## Semantic documentation
 
-Code and documentation form one change boundary. Issue and plan contracts carry first-class declaration, external-document, and rationale fields. Implementation applies the `document-code` policy to every added or materially changed maintained JavaScript or TypeScript surface and keeps external semantics current; review and verification bind that evidence to the same change digest. Untouched historical code is outside that gate. Detailed writing and validation procedures remain in the skill rather than agent or command prompts.
+Code and documentation form one change boundary. Issue and plan contracts carry first-class declaration, external-document, and rationale fields. Implementation keeps affected external semantics and non-obvious code contracts current; review and verification bind that evidence to the same change digest. Documentation stays proportional to behavior rather than tracking every declaration or local binding.
 
 ## Lifecycle
 
@@ -33,4 +36,4 @@ The complete state transitions, retry bounds, handoff requirements, and merge ga
 
 ## Failure posture
 
-Missing evidence, ambiguous state, digest mismatch, partial remote outcomes, unresolved decisions, unavailable required checks, and unsafe repository state are blockers. The workflow never broadens permissions, guesses a transition, or blindly retries a remote mutation.
+Missing material evidence, ambiguous durable state, digest mismatch, partial remote outcomes, and unsafe repository state are blockers for publication or merge. Ordinary development and diagnosis should continue with the best available tools instead of manufacturing workflow ceremony.

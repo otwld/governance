@@ -8,13 +8,21 @@
 
 Authenticate GitHub CLI non-interactively with a least-privilege credential whose repository and Project owner match `.opencode/project.json`. Verify `gh auth status`, repository identity, Project access, branch protection, required checks, and squash settings before a mutation. Never print, read, copy, or store tokens in repository files or workflow artifacts.
 
-Grant issue write only to the task-shaper's execution identity. For Project intake,
-give task-shaper only item-add, the item-edit needed to assign the configured Ready
-option, and Project readback; it must not perform later status edits. Give orchestrator
-branch, pull request, and check permissions plus Project item-edit/readback for
-post-Ready Active, review, Done, and Blocked transitions. Do not grant either identity
-administration, protection bypass, force push, deployment, secret management, or
-package publication. Keep reviewer and researcher credentials read-only.
+GitHub access has separate credential channels. `gh` commands use GitHub CLI
+authentication such as `GH_TOKEN`/`GITHUB_TOKEN` or the CLI credential store.
+OpenCode `webfetch` performs anonymous HTTP requests and does not inherit `gh`
+credentials; do not use it for private repository or API evidence. Git over HTTPS has
+its own credential helper and may also fail even when `gh auth status` succeeds. When
+diagnosing access, test `gh auth status`, `gh api user --jq .login`, and authenticated
+`gh repo view <owner/repository>` separately from Git transport. A private-resource
+404 or API 401 from `webfetch` does not prove that `gh` authentication is broken.
+
+Use a development credential with the repository and Project access needed by the
+requested workflow. Custom tools still separate issue publication from durable
+delivery-state publication, but ordinary agents may use authenticated read-only or
+development commands directly. Avoid administration, protection bypass, force push,
+secret management, package publication, and deployment unless the user explicitly
+requests that operation.
 
 ## Installation
 
@@ -24,7 +32,9 @@ If installation fails, use the installer's rollback result and retained manifest
 
 ## Repository setup
 
-Run `/setup-project`. Its first handoff is evidence-only; its second delegates file edits to the implementer. Confirm repository identity, exact commands, document paths, trusted GitHub artifact authors, Project names and node IDs, Status and deterministic Priority configuration, required checks, and squash policy from direct local and GitHub evidence. Record exact GitHub logins in top-level `trustedActors`; this is an allow-list for artifact-comment provenance, not a permission grant. Record `priorityOptions` as ordered `{name, optionId}` objects from highest to lowest priority, set `missingPriority` explicitly, and keep `includeDrafts` and `includeArchived` false. Include the automation identity and authorized human publishers, remove departed or compromised identities, and block artifacts from anyone else. Start from `templates/project.json` for non-Project delivery or `templates/project.github.example.json` for Project-backed delivery, replacing every placeholder. Setup must not create Project fields, alter repository settings, or overwrite existing governance files blindly. Validate with `governance validate-project <root>` and the configured verification command.
+Run `/setup-project`. The orchestrator inspects and edits directly, delegating only
+when useful. Setup requires no issue, plan, digest, or formal handoff. Confirm repository identity,
+exact commands, document paths, trusted GitHub artifact authors, Project names and node IDs, Status and deterministic Priority configuration, required checks, and squash policy from direct local and GitHub evidence. Record exact GitHub logins in top-level `trustedActors`; this is an allow-list for artifact-comment provenance, not a permission grant. Record `priorityOptions` as ordered `{name, optionId}` objects from highest to lowest priority, set `missingPriority` explicitly, and keep `includeDrafts` and `includeArchived` false. Include the automation identity and authorized human publishers, remove departed or compromised identities, and block artifacts from anyone else. Start from `templates/project.json` for non-Project delivery or `templates/project.github.example.json` for Project-backed delivery, replacing every placeholder. Setup must not create Project fields, alter repository settings, or overwrite existing governance files blindly. Validate with `governance validate-project <root>` and the configured verification command.
 
 ## Delivery preflight
 
@@ -32,7 +42,7 @@ Before every run, require a fully understood working tree, the expected base and
 
 ## Daily flow
 
-Use `/brainstorm` only when direction needs exploration. Use `/issue` for direct shaping or a selected concept; task-shaper may publish, create the intake Project item, and assign Ready only. Use `/run-issue` for one approved issue and `/run-project` for an ordered Project queue; orchestrator starts from verified Ready and alone owns Active, review, Done, and Blocked transitions. The detailed delivery policy is [the canonical lifecycle](../skills/deliver-issue/references/lifecycle.md).
+Use `/brainstorm` when direction needs exploration. Use `/issue` for direct shaping or a selected concept. Use `/run-issue` for one approved issue and `/run-project` for an ordered Project queue. Agents may perform ordinary development and diagnostic work directly; custom tools retain ownership of issue publication and durable delivery-state records. The detailed delivery policy is [the canonical lifecycle](../skills/deliver-issue/references/lifecycle.md).
 
 For an approved dependency task, `dependency_update` changes one existing direct
 `dependencies` or `devDependencies` entry in the root package only. It requires a

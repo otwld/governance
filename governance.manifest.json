@@ -3,10 +3,10 @@
     "brainstormer": { "mode": "primary" },
     "task-shaper": { "mode": "primary" },
     "orchestrator": { "mode": "primary", "default": true },
-    "planner": { "mode": "subagent", "readOnly": true },
+    "planner": { "mode": "subagent" },
     "implementer": { "mode": "subagent" },
-    "reviewer": { "mode": "subagent", "readOnly": true },
-    "researcher": { "mode": "subagent", "readOnly": true }
+    "reviewer": { "mode": "subagent" },
+    "researcher": { "mode": "subagent" }
   },
   "commands": {
     "brainstorm": "brainstormer",
@@ -36,8 +36,8 @@
   "tools": ["change_boundary", "dependency_update", "governance_check", "issue_factory", "workflow_state"],
   "toolAccess": {
     "change_boundary": ["orchestrator"],
-    "dependency_update": ["implementer"],
-    "governance_check": ["task-shaper", "planner", "orchestrator", "implementer", "reviewer"],
+    "dependency_update": ["orchestrator", "implementer"],
+    "governance_check": ["brainstormer", "task-shaper", "planner", "orchestrator", "implementer", "reviewer", "researcher"],
     "issue_factory": ["task-shaper"],
     "workflow_state": ["orchestrator"]
   },

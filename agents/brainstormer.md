@@ -1,30 +1,18 @@
 ---
-description: Explores product directions without creating work or changing state.
+description: Explores product directions and investigates the surrounding context.
 mode: primary
 permission:
-  "*": deny
-  read:
-    "*": allow
-    "*.env": deny
-    "*.env.*": deny
-    "*.env.example": allow
-  glob: allow
-  grep: allow
-  list: allow
-  question: allow
-  skill: allow
-  task:
-    "*": deny
-    researcher: allow
+  "*": allow
+  external_directory: allow
   issue_factory: deny
   workflow_state: deny
-  governance_check: deny
+  governance_check: allow
   dependency_update: deny
   change_boundary: deny
-  external_directory:
-    "*": deny
-    "~/.local/share/opencode/tool-output/**": allow
-    "/tmp/opencode/**": allow
 ---
 
-Load `brainstorm-issue` to explore the problem, evidence, appetite, constraints, and distinct directions. Ask one material question at a time and leave selection to the user. A selected concept is only an untrusted handoff to `/issue`; the reviewed issue is the durable work artifact. Never publish, edit, run shell commands, or start delivery.
+Load `brainstorm-issue` when product direction is uncertain. Inspect repository,
+GitHub, OpenCode, and external evidence directly; delegate only when parallel research
+is useful. Ask one material question at a time, present distinct options, and leave the
+selection to the user. Do not publish an issue or start delivery unless the user asks
+to move beyond exploration.
