@@ -1,5 +1,9 @@
 # Agent Guidance
 
+## Project overview
+
+`<verified purpose and repository type; reference manifests instead of copying versions>`
+
 ## Scope
 
 Read applicable repository instructions before editing. Make only the smallest
@@ -11,6 +15,35 @@ overwrite unrelated work.
 - Repository guidance: `<path or not documented>`
 - Architecture or ownership: `<path or not documented>`
 - Task-specific constraints: `<verified context>`
+
+## Repository structure
+
+- `<path>`: `<verified responsibility>`
+
+## Development commands
+
+- Install: `<verified command or not applicable>`
+- Build or run: `<verified command or not applicable>`
+- Test: `<verified command or not applicable>`
+- Lint and typecheck: `<verified commands or not applicable>`
+
+## Patterns and conventions
+
+- `<verified architecture, registration, export, generation, or content pattern>`
+- `<verified CI, asset, responsive, release, or documentation rule when applicable>`
+
+## Maintenance matrix
+
+| When changing | Also inspect or update |
+| --- | --- |
+| `<package or source area>` | `<verified dependents, tests, generated outputs, and docs>` |
+| `<workflow or configuration>` | `<verified scripts, CI, and operations documentation>` |
+
+Keep only rows supported by actual import, workspace, generation, or release relationships.
+
+## Common pitfalls
+
+- `<evidence-backed failure mode, coupled update, or not documented>`
 
 ## Validation
 

@@ -9,7 +9,7 @@ OpenCode Governance is an issue factory and sequential delivery workflow for Ope
 - `/run-issue`: deliver exactly one approved issue.
 - `/run-project`: process ready Project issues one at a time.
 - `/review`: independently review an issue, plan, or change.
-- `/setup-project`: inspect and configure an existing Node project.
+- `/setup-project`: bootstrap or audit evidence-backed OpenCode governance in an existing Node or TypeScript project.
 
 The primary roster is brainstormer, task-shaper, and orchestrator. Planner, implementer, reviewer, and researcher are specialized subagents. Agents have broad development access so they can inspect repositories, use authenticated GitHub commands, diagnose OpenCode, edit, and run checks without searching for permission workarounds. Prompts preserve role intent, while explicit custom-tool permissions retain ownership of issue publication and durable workflow state.
 
@@ -45,6 +45,20 @@ node bin/governance.mjs validate-project /workspace/governance
 ```
 
 The package is private. No package publication or deployment workflow is provided.
+
+## Repository setup
+
+`/setup-project` inventories OpenCode context, contribution workflow, and onboarding
+assets before changing anything. It distinguishes a first-run bootstrap from a rerun audit,
+supports report-only requests and explicit asset exclusions, and uses preservation-first
+merges for incomplete existing assets. The terminal report uses `Ready`, `Needs work`,
+`Missing`, `Not applicable`, and `Blocked`; readiness counts include only applicable assets.
+The workflow uses authenticated, bounded GitHub discovery when available and a local-only
+fallback otherwise. It never creates `.mcp.json`, speculative MCP or Dependabot config,
+or promotional badges, and it does not commit, push, or create pull requests unless
+explicitly requested. See
+[the setup skill](skills/setup-node-project/SKILL.md) and
+[operations](docs/operations.md#repository-setup).
 
 ## License
 
